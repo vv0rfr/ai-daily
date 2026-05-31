@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 垂直日报 · 2026-05-29</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f5f7; color: #1d1d1f; line-height: 1.5;
+    max-width: 740px; margin: 0 auto;
+  }
+
+  /* header */
+  .hdr {
+    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+    color:#fff; padding: 36px 24px 28px; text-align:center;
+  }
+  .hdr h1 { font-size:1.6em; font-weight:800; letter-spacing:2px; }
+  .hdr .sub { font-size:0.85em; color:rgba(255,255,255,0.6); margin-top:6px; }
+
+  .wrap { padding: 16px 14px; }
+
+  /* 概览 */
+  .ov {
+    background:#fff; border-radius:10px; padding:14px 16px; margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .ov h3 { font-size:0.8em; color:#86868b; font-weight:600; margin-bottom:8px; letter-spacing:1px; }
+  .ov li { font-size:0.82em; color:#47474a; padding:3px 0; list-style:none; }
+  .ov li strong { color:#1d1d1f; }
+
+  /* hero */
+  .hero {
+    border-radius:14px; overflow:hidden; margin-bottom:14px;
+    min-height:200px; display:flex; align-items:flex-end; color:#fff;
+  }
+  .hero-mask {
+    width:100%; padding:22px 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 55%, transparent 100%);
+  }
+  .hero-t { font-size:1.15em; font-weight:700; margin-bottom:6px; line-height:1.35; }
+  .hero-s { font-size:0.82em; color:rgba(255,255,255,0.8); margin-bottom:10px; }
+  .hero-b { display:flex; align-items:center; gap:6px; }
+
+  /* tile grid */
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .tile {
+    background:#fff; border-radius:10px; padding:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .tile:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .tile-t { font-size:0.88em; font-weight:700; color:#1d1d1f; margin-bottom:4px; line-height:1.4; }
+  .tile-s { font-size:0.76em; color:#86868b; line-height:1.5; margin-bottom:8px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .tile-b { display:flex; align-items:center; gap:6px; }
+
+  /* rows */
+  .row {
+    background:#fff; border-radius:8px; padding:10px 14px; margin-bottom:6px;
+    display:flex; align-items:center; gap:8px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+    transition: background 0.15s;
+  }
+  .row:hover { background:#f0f0f2; }
+  .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .row-t { font-size:0.82em; font-weight:600; color:#1d1d1f; flex-shrink:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }
+  .row-s { font-size:0.75em; color:#86868b; flex:1; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* buttons */
+  .btns { display:flex; gap:4px; flex-shrink:0; margin-left:auto; }
+  .btn-s {
+    background:#f5f5f7; color:#1d1d1f; border:none; padding:2px 8px;
+    border-radius:4px; font-size:0.68em; cursor:pointer; font-weight:600;
+  }
+  .btn-s:hover { background:#e8e8ed; }
+  .btn-s.active { background:#0071e3; color:#fff; }
+  .btn-r {
+    display:inline-block; padding:2px 8px; border-radius:4px;
+    font-size:0.68em; text-decoration:none; background:#0071e3; color:#fff; font-weight:600;
+  }
+  .btn-r:hover { background:#0077ed; }
+  .src { font-size:0.68em; color:#aeaeb2; margin-left:4px; }
+  .hero .btn-s { background:rgba(255,255,255,0.15); color:#fff; }
+  .hero .btn-s:hover { background:rgba(255,255,255,0.25); }
+  .hero .btn-s.active { background:#fff; color:#1d1d1f; }
+  .hero .btn-r { background:rgba(255,255,255,0.2); color:#fff; }
+  .hero .btn-r:hover { background:rgba(255,255,255,0.35); }
+  .hero .src { color:rgba(255,255,255,0.4); }
+
+  .ft { text-align:center; color:#aeaeb2; font-size:0.72em; padding:20px 14px 28px; }
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <h1>AI 垂直日报</h1>
+    <div class="sub">2026-05-29 · 10 条精选</div>
+  </div>
+  <div class="wrap">
+  <div class="ov">
+    <h3>今日概览</h3>
+    <ul>
+      <li><strong>模型</strong>：小米开源可控视频音效生成模型 ControlFoley，让声音"按你想要的来"、llm-anthropic 0.25.1、Claude Opus 4.8: "a modest but tangible improvement" 等5条</li>
+      <li><strong>行业</strong>：谷歌 DeepMind CEO 哈萨比斯：AGI 最快三年内到来，研发速度远超预期、特斯拉 FSD 安全性宣称遭质疑、Anthropic's run-rate revenue hits $47 billion 等5条</li>
+    </ul>
+  </div>
+  
+    <div class="hero" data-original-lang="zh" style="background:linear-gradient(135deg, #0d9488 0%, #0f766e 100%)">
+      <div class="hero-mask">
+        <div class="hero-t">小米开源可控视频音效生成模型 ControlFoley，让声音&quot;按你想要的来&quot;</div>
+        <div class="hero-s">小米大模型应用团队发布开源可控视频音效生成模型 ControlFoley，旨在解决创作中的可控性难题。该模型统一支持文本引导视频配音、文本控制视频配音和参考音频控制视频配音三类任务。ControlFoley 在 VGGSound-Test ...</div>
+        <div class="hero-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://www.ithome.com/0/957/282.htm" class="btn-r" target="_blank">原文</a></span><span class="src">ithome.com</span></div>
+      </div>
+    </div>
+  <div class="tiles">
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #0d9488">
+      <div class="tile-t">llm-anthropic 0.25.1</div>
+      <div class="tile-s">llm-anthropic 发布 0.25.1 版本。主要更新包括：新增 Claude Opus 4.8 （`claude-opus-4.8`） 模型；为账户启用了该功能的组织新增了 `-o fast 1` 选项以使用快速模式；调整了各模型...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://simonwillison.net/2026/May/28/llm-anthropic" class="btn-r" target="_blank">原文</a></span><span class="src">simonwillison.net</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #0d9488">
+      <div class="tile-t">Claude Opus 4.8: &quot;a modest but tangible improvement&quot;</div>
+      <div class="tile-s">Anthropic shipped Claude Opus 4.8 today. My favourite thing about it is this note in the release announcement: Users wil...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://simonwillison.net/2026/May/28/claude-opus-4-8/#atom-everything" class="btn-r" target="_blank">原文</a></span><span class="src">simonwillison.net</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #0d9488">
+      <div class="tile-t">Claude company Anthropic nears a trillion-dollar valuation after raising $65 billion in Series H</div>
+      <div class="tile-s">Anthropic raises $65 billion in a Series H round at a $965 billion valuation. Annualized revenue tops $47 billion, accor...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/claude-company-anthropic-nears-a-trillion-dollar-valuation-after-raising-65-billion-in-series-h/" class="btn-r" target="_blank">原文</a></span><span class="src">the-decoder.com</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #0d9488">
+      <div class="tile-t">Anthropic ships Claude Opus 4.8 as a &quot;modest but tangible improvement&quot; that tops GPT-5.5 in most benchmarks</div>
+      <div class="tile-s">Anthropic releases Claude Opus 4.8, which beats GPT-5.5 and Gemini 3.1 Pro in most benchmarks. The model also catches it...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/anthropic-ships-claude-opus-4-8-as-a-modest-but-tangible-improvement-that-tops-gpt-5-5-in-most-benchmarks/" class="btn-r" target="_blank">原文</a></span><span class="src">the-decoder.com</span></div>
+    </div>
+  </div>
+    <div class="row" data-original-lang="zh">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">谷歌 DeepMind CEO 哈萨比斯：AGI 最快三年内到来，研发速度远超预期</span>
+      <span class="row-s">谷歌 DeepMind 首席执行官德米斯·哈萨比斯预测，AGI 研发速度远超预期，最快可能在 2029 年至 2030 年前后出现。作为 AlphaGo、AlphaFold 的主导者，他认为当前 AI 智能体是未来更强智能的预演，随着多模态...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://www.ithome.com/0/957/154.htm" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="zh">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">特斯拉 FSD 安全性宣称遭质疑</span>
+      <span class="row-s">特斯拉声称其全自动驾驶软件（FSD）安全性最高可达人类的10倍，但路透社调查发现此数据经不起推敲。参与训练FSD的员工表示该技术远未成熟，其安全演示高度依赖人工。统计方法被11位交通安全研究人员指出存在缺陷，例如与更广泛的联邦事故数据进行不...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://www.ithome.com/0/956/864.htm" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">Anthropic&#x27;s run-rate revenue hits $47 billion</span>
+      <span class="row-s">The most interesting thing about Anthropic&#x27;s $65B Series H announcement is this line (emphasis mine): Since our Series G...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://simonwillison.net/2026/May/29/anthropic/#atom-everything" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">Amazon kills internal AI leaderboard after employees gamed it with pointless tasks</span>
+      <span class="row-s">Amazon is pulling an internal AI ranking system, the Financial Times reports, after employees inflated their scores thro...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/amazon-kills-internal-ai-leaderboard-after-employees-gamed-it-with-pointless-tasks/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">Google Cloud responds to AI-accelerated cyberattacks with a platform that aims to close security gaps in minutes</span>
+      <span class="row-s">Google Cloud has unveiled &quot;AI Threat Defense,&quot; a platform designed to automatically find, assess, and patch security fla...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/google-cloud-responds-to-ai-accelerated-cyberattacks-with-a-platform-that-aims-to-close-security-gaps-in-minutes/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+  </div>
+  <div class="ft">本文由 AI 自动整理 · 内容仅供参考</div>
+
+  <script>
+  async function toggleLang(btn) {
+    var card = btn.closest('[data-original-lang]');
+    var content = card.querySelector('.hero-s, .tile-s, .row-s');
+    if (!content) content = card;
+    var originalLang = card.dataset.originalLang;
+
+    if (card.dataset.translated) {
+      if (card.dataset.showing === 'translated') {
+        content.textContent = card.dataset.originalText;
+        card.dataset.showing = 'original';
+        btn.textContent = originalLang === 'zh' ? 'EN' : '中文';
+        btn.classList.remove('active');
+      } else {
+        content.textContent = card.dataset.translated;
+        card.dataset.showing = 'translated';
+        btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+        btn.classList.add('active');
+      }
+      return;
+    }
+
+    var text = content.textContent;
+    card.dataset.originalText = text;
+    card.dataset.showing = 'original';
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    var targetLang = originalLang === 'zh' ? 'en' : 'zh-CN';
+    var sourceLang = originalLang === 'zh' ? 'zh-CN' : 'en';
+
+    try {
+      var url = 'https://api.mymemory.translated.net/get?q=' +
+                encodeURIComponent(text.substring(0, 500)) +
+                '&langpair=' + sourceLang + '|' + targetLang;
+      var resp = await fetch(url);
+      var data = await resp.json();
+      var translated = data.responseData.translatedText;
+      card.dataset.translated = translated;
+      content.textContent = translated;
+      card.dataset.showing = 'translated';
+      btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+      btn.classList.add('active');
+    } catch(e) {
+      btn.textContent = '失败';
+      setTimeout(function() { btn.textContent = originalLang === 'zh' ? 'EN' : '中文'; }, 2000);
+    }
+    btn.disabled = false;
+  }
+  </script>
+</body>
+</html>

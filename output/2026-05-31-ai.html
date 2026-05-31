@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 垂直日报 · 2026-05-31</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f5f7; color: #1d1d1f; line-height: 1.5;
+    max-width: 740px; margin: 0 auto;
+  }
+
+  /* header */
+  .hdr {
+    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+    color:#fff; padding: 36px 24px 28px; text-align:center;
+  }
+  .hdr h1 { font-size:1.6em; font-weight:800; letter-spacing:2px; }
+  .hdr .sub { font-size:0.85em; color:rgba(255,255,255,0.6); margin-top:6px; }
+
+  .wrap { padding: 16px 14px; }
+
+  /* 概览 */
+  .ov {
+    background:#fff; border-radius:10px; padding:14px 16px; margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .ov h3 { font-size:0.8em; color:#86868b; font-weight:600; margin-bottom:8px; letter-spacing:1px; }
+  .ov li { font-size:0.82em; color:#47474a; padding:3px 0; list-style:none; }
+  .ov li strong { color:#1d1d1f; }
+
+  /* hero */
+  .hero {
+    border-radius:14px; overflow:hidden; margin-bottom:14px;
+    min-height:200px; display:flex; align-items:flex-end; color:#fff;
+  }
+  .hero-mask {
+    width:100%; padding:22px 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 55%, transparent 100%);
+  }
+  .hero-t { font-size:1.15em; font-weight:700; margin-bottom:6px; line-height:1.35; }
+  .hero-s { font-size:0.82em; color:rgba(255,255,255,0.8); margin-bottom:10px; }
+  .hero-b { display:flex; align-items:center; gap:6px; }
+
+  /* tile grid */
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .tile {
+    background:#fff; border-radius:10px; padding:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .tile:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .tile-t { font-size:0.88em; font-weight:700; color:#1d1d1f; margin-bottom:4px; line-height:1.4; }
+  .tile-s { font-size:0.76em; color:#86868b; line-height:1.5; margin-bottom:8px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .tile-b { display:flex; align-items:center; gap:6px; }
+
+  /* rows */
+  .row {
+    background:#fff; border-radius:8px; padding:10px 14px; margin-bottom:6px;
+    display:flex; align-items:center; gap:8px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+    transition: background 0.15s;
+  }
+  .row:hover { background:#f0f0f2; }
+  .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .row-t { font-size:0.82em; font-weight:600; color:#1d1d1f; flex-shrink:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }
+  .row-s { font-size:0.75em; color:#86868b; flex:1; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* buttons */
+  .btns { display:flex; gap:4px; flex-shrink:0; margin-left:auto; }
+  .btn-s {
+    background:#f5f5f7; color:#1d1d1f; border:none; padding:2px 8px;
+    border-radius:4px; font-size:0.68em; cursor:pointer; font-weight:600;
+  }
+  .btn-s:hover { background:#e8e8ed; }
+  .btn-s.active { background:#0071e3; color:#fff; }
+  .btn-r {
+    display:inline-block; padding:2px 8px; border-radius:4px;
+    font-size:0.68em; text-decoration:none; background:#0071e3; color:#fff; font-weight:600;
+  }
+  .btn-r:hover { background:#0077ed; }
+  .src { font-size:0.68em; color:#aeaeb2; margin-left:4px; }
+  .hero .btn-s { background:rgba(255,255,255,0.15); color:#fff; }
+  .hero .btn-s:hover { background:rgba(255,255,255,0.25); }
+  .hero .btn-s.active { background:#fff; color:#1d1d1f; }
+  .hero .btn-r { background:rgba(255,255,255,0.2); color:#fff; }
+  .hero .btn-r:hover { background:rgba(255,255,255,0.35); }
+  .hero .src { color:rgba(255,255,255,0.4); }
+
+  .ft { text-align:center; color:#aeaeb2; font-size:0.72em; padding:20px 14px 28px; }
+
+  /* 视频板块 */
+  .vsection { margin-top:14px; }
+  .vsection-title {
+    font-size:0.95em; font-weight:700; color:#9333ea; margin-bottom:10px;
+    padding-left:2px; letter-spacing:0.5px;
+  }
+  .vgrid { display:flex; flex-direction:column; gap:10px; }
+  .vcard {
+    display:flex; gap:12px; background:#fff; border-radius:10px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .vcard:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .vcard-img {
+    width:140px; min-height:80px; flex-shrink:0; background-size:cover; background-position:center;
+    background-color:#e5e7eb; position:relative; display:block; text-decoration:none;
+  }
+  .vcard-dur {
+    position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff;
+    font-size:0.65em; padding:1px 5px; border-radius:3px; font-weight:600;
+  }
+  .vcard-info { flex:1; padding:10px 12px 10px 0; min-width:0; display:flex; flex-direction:column; justify-content:center; }
+  .vcard-t {
+    font-size:0.85em; font-weight:700; color:#1d1d1f; line-height:1.4; margin-bottom:4px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .vcard-meta { font-size:0.72em; color:#86868b; }
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <h1>AI 垂直日报</h1>
+    <div class="sub">2026-05-31 · 15 条精选</div>
+  </div>
+  <div class="wrap">
+  <div class="ov">
+    <h3>今日概览</h3>
+    <ul>
+      <li><strong>行业</strong>：6000 多公里全程零干预：特斯拉 FSD 完成全球首次横穿加拿大自动驾驶、Quoting Karen Kwok for Reuters Breakingviews、Quoting Daniel Jalkut 等7条</li>
+      <li><strong>模型</strong>：How we contain Claude across products、AI search agents often confirm what they already know instead of actually researching the web、Attackers abuse shared ChatGPT and Claude chats to spread malware</li>
+      <li><strong>视频</strong>：AI时代，我们要学会如何“压榨”AI...、Codex依赖症重症患者采访、【爱美/伊藤彩沙/佐佐木未来】爱美的首次麻辣烫_2026/5/30发布（大模型字幕） 等5条</li>
+    </ul>
+  </div>
+  
+    <div class="hero" data-original-lang="zh" style="background:linear-gradient(135deg, #ea580c 0%, #c2410c 100%)">
+      <div class="hero-mask">
+        <div class="hero-t">6000 多公里全程零干预：特斯拉 FSD 完成全球首次横穿加拿大自动驾驶</div>
+        <div class="hero-s">一辆特斯拉汽车搭载 FSD V14.3.3 版本软件，完成了全球首次全程零人工干预、横穿加拿大的自动驾驶行程。车辆从温哥华出发，历时 4 天 21 小时，行驶 3760 英里（6051 公里）抵达哈利法克斯，全程所有驾驶操作（包括高速并线、...</div>
+        <div class="hero-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://www.ithome.com/0/957/718.htm" class="btn-r" target="_blank">原文</a></span><span class="src">ithome.com</span></div>
+      </div>
+    </div>
+  <div class="tiles">
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #ea580c">
+      <div class="tile-t">Quoting Karen Kwok for Reuters Breakingviews</div>
+      <div class="tile-s">Anthropic defines “run-rate revenue” in two parts. Use the last 28 days of sales ⁠from customers charged on a consumptio...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://simonwillison.net/2026/May/31/anthropic-run-rate/#atom-everything" class="btn-r" target="_blank">原文</a></span><span class="src">simonwillison.net</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #ea580c">
+      <div class="tile-t">Quoting Daniel Jalkut</div>
+      <div class="tile-s">My take on AI is, essentially, everybody who’s against it is too against it and everybody who’s for it is too for it. Da...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://simonwillison.net/2026/May/30/daniel-jalkut/#atom-everything" class="btn-r" target="_blank">原文</a></span><span class="src">simonwillison.net</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #ea580c">
+      <div class="tile-t">SoftBank plans 75 billion euro AI data center buildout in France</div>
+      <div class="tile-s">SoftBank plans to build AI data centers with up to 5 gigawatts of capacity in France, the company&#x27;s largest AI infrastru...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/softbank-plans-75-billion-euro-ai-data-center-buildout-in-france/" class="btn-r" target="_blank">原文</a></span><span class="src">the-decoder.com</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #ea580c">
+      <div class="tile-t">Microsoft and Nvidia reportedly team up on AI PCs that run actual agents instead of Copilot</div>
+      <div class="tile-s">Nvidia is pushing into the PC market with its own chips as the main processor. The first Windows computers from Dell and...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/microsoft-and-nvidia-reportedly-team-up-on-ai-pcs-that-run-actual-agents-instead-of-copilot/" class="btn-r" target="_blank">原文</a></span><span class="src">the-decoder.com</span></div>
+    </div>
+  </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">Making AI chatbots helpful weakens their ability to simulate human behavior, large-scale study finds</span>
+      <span class="row-s">A large-scale study covering 208,000 participants and 26 million responses shows that the very training that turns langu...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/making-ai-chatbots-helpful-weakens-their-ability-to-simulate-human-behavior-large-scale-study-finds/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">Terence Tao argues AI could bring division of labor to math for the first time in history</span>
+      <span class="row-s">Mathematician Terence Tao describes how AI could reshape math research by enabling division of labor for the first time....</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/terence-tao-argues-ai-could-bring-division-of-labor-to-math-for-the-first-time-in-history/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#0d9488"></span>
+      <span class="row-t">How we contain Claude across products</span>
+      <span class="row-s">How we contain Claude across products A complaint I often have about sandboxing products is that they are rarely thoroug...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://simonwillison.net/2026/May/30/how-we-contain-claude/#atom-everything" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#0d9488"></span>
+      <span class="row-t">AI search agents often confirm what they already know instead of actually researching the web</span>
+      <span class="row-s">Leading AI search agents like GPT-5.4 and Kimi K2.6 don&#x27;t appear to do much actual research on established benchmarks. T...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/ai-search-agents-often-confirm-what-they-already-know-instead-of-actually-researching-the-web/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#0d9488"></span>
+      <span class="row-t">Attackers abuse shared ChatGPT and Claude chats to spread malware</span>
+      <span class="row-s">Attackers are exploiting the chat-sharing features in ChatGPT and Claude to spread malware through shared conversations....</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/attackers-abuse-shared-chatgpt-and-claude-chats-to-spread-malware/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+  <div class="vsection">
+    <div class="vsection-title">🎬 视频精选</div>
+    <div class="vgrid">
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116661831076673" target="_blank" class="vcard-img" style="background-image:url('https://i2.hdslb.com/bfs/archive/3e54a81d263d405f320145b865dac78f2e0fcfd7.jpg')">
+        <span class="vcard-dur">4:4</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">AI时代，我们要学会如何“压榨”AI...</div>
+        <div class="vcard-meta">UP主：大老湿gg　｜　1万 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116665119479370" target="_blank" class="vcard-img" style="background-image:url('https://i0.hdslb.com/bfs/archive/143b5900ac7f1bd32feb370a09511fca61e1a87a.jpg')">
+        <span class="vcard-dur">1:46</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">Codex依赖症重症患者采访</div>
+        <div class="vcard-meta">UP主：AIwood爱屋研究室　｜　5719 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116663424975576" target="_blank" class="vcard-img" style="background-image:url('https://i0.hdslb.com/bfs/archive/878c210c5cdfeed63282332679ab39bb9f520a9a.jpg')">
+        <span class="vcard-dur">11:5</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">【爱美/伊藤彩沙/佐佐木未来】爱美的首次麻辣烫_2026/5/30发布（大模型字幕）</div>
+        <div class="vcard-meta">UP主：木の葉景天　｜　2414 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116663106147663" target="_blank" class="vcard-img" style="background-image:url('https://i0.hdslb.com/bfs/archive/e4e8376aaf48634f17a15486700d88dbe3247ead.jpg')">
+        <span class="vcard-dur">3:45</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">【SOLO DEBUT】首个AI访谈类综艺；谁家女爱豆天天想板面啊？【AI偶像】</div>
+        <div class="vcard-meta">UP主：Ena恩娜　｜　2366 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116663643015759" target="_blank" class="vcard-img" style="background-image:url('https://i1.hdslb.com/bfs/archive/42cca747bbadd6ba8330d4f7f525b50a36ef93b6.jpg')">
+        <span class="vcard-dur">144:51</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">【双语音+文稿】（完整版）全网首发！英伟达创始人兼CEO黄仁勋在英伟达日本AI峰会发表特别演讲，并与软银孙正义炉边对话。</div>
+        <div class="vcard-meta">UP主：YouTube访谈实录　｜　1854 播放</div>
+      </div>
+    </div>
+    </div>
+  </div>
+  </div>
+  <div class="ft">本文由 AI 自动整理 · 内容仅供参考</div>
+
+  <script>
+  async function toggleLang(btn) {
+    var card = btn.closest('[data-original-lang]');
+    var content = card.querySelector('.hero-s, .tile-s, .row-s');
+    if (!content) content = card;
+    var originalLang = card.dataset.originalLang;
+
+    if (card.dataset.translated) {
+      if (card.dataset.showing === 'translated') {
+        content.textContent = card.dataset.originalText;
+        card.dataset.showing = 'original';
+        btn.textContent = originalLang === 'zh' ? 'EN' : '中文';
+        btn.classList.remove('active');
+      } else {
+        content.textContent = card.dataset.translated;
+        card.dataset.showing = 'translated';
+        btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+        btn.classList.add('active');
+      }
+      return;
+    }
+
+    var text = content.textContent;
+    card.dataset.originalText = text;
+    card.dataset.showing = 'original';
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    var targetLang = originalLang === 'zh' ? 'en' : 'zh-CN';
+    var sourceLang = originalLang === 'zh' ? 'zh-CN' : 'en';
+
+    try {
+      var url = 'https://api.mymemory.translated.net/get?q=' +
+                encodeURIComponent(text.substring(0, 500)) +
+                '&langpair=' + sourceLang + '|' + targetLang;
+      var resp = await fetch(url);
+      var data = await resp.json();
+      var translated = data.responseData.translatedText;
+      card.dataset.translated = translated;
+      content.textContent = translated;
+      card.dataset.showing = 'translated';
+      btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+      btn.classList.add('active');
+    } catch(e) {
+      btn.textContent = '失败';
+      setTimeout(function() { btn.textContent = originalLang === 'zh' ? 'EN' : '中文'; }, 2000);
+    }
+    btn.disabled = false;
+  }
+  </script>
+</body>
+</html>
