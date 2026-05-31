@@ -64,7 +64,7 @@ jobs:
           retention-days: 30
 
       - name: Notify (Server酱)
-        if: ${{ env.SERVERCHAN_KEY != '' }}
+        if: env.SERVERCHAN_KEY != ''
         env:
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           MODE: ${{ steps.mode.outputs.value }}
@@ -76,7 +76,7 @@ jobs:
             -d "desp=模式: ${MODE}\n文件数: ${FILES}\n\n[查看日报](https://github.com/${{ github.repository }}/tree/main/output)" || true
 
       - name: Publish to WeChat
-        if: ${{ secrets.WECHAT_APP_ID != '' }}
+        if: env.WECHAT_APP_ID != ''
         env:
           WECHAT_APP_ID: ${{ secrets.WECHAT_APP_ID }}
           WECHAT_APP_SECRET: ${{ secrets.WECHAT_APP_SECRET }}
