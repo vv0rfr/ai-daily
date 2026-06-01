@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 垂直日报 · 2026-06-01</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f5f7; color: #1d1d1f; line-height: 1.5;
+    max-width: 740px; margin: 0 auto;
+  }
+
+  /* header */
+  .hdr {
+    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+    color:#fff; padding: 36px 24px 28px; text-align:center;
+  }
+  .hdr h1 { font-size:1.6em; font-weight:800; letter-spacing:2px; }
+  .hdr .sub { font-size:0.85em; color:rgba(255,255,255,0.6); margin-top:6px; }
+
+  .wrap { padding: 16px 14px; }
+
+  /* 概览 */
+  .ov {
+    background:#fff; border-radius:10px; padding:14px 16px; margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .ov h3 { font-size:0.8em; color:#86868b; font-weight:600; margin-bottom:8px; letter-spacing:1px; }
+  .ov li { font-size:0.82em; color:#47474a; padding:3px 0; list-style:none; }
+  .ov li strong { color:#1d1d1f; }
+
+  /* hero */
+  .hero {
+    border-radius:14px; overflow:hidden; margin-bottom:14px;
+    min-height:200px; display:flex; align-items:flex-end; color:#fff;
+  }
+  .hero-mask {
+    width:100%; padding:22px 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 55%, transparent 100%);
+  }
+  .hero-t { font-size:1.15em; font-weight:700; margin-bottom:6px; line-height:1.35; }
+  .hero-s { font-size:0.82em; color:rgba(255,255,255,0.8); margin-bottom:10px; }
+  .hero-b { display:flex; align-items:center; gap:6px; }
+
+  /* tile grid */
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .tile {
+    background:#fff; border-radius:10px; padding:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .tile:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .tile-t { font-size:0.88em; font-weight:700; color:#1d1d1f; margin-bottom:4px; line-height:1.4; }
+  .tile-s { font-size:0.76em; color:#86868b; line-height:1.5; margin-bottom:8px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .tile-b { display:flex; align-items:center; gap:6px; }
+
+  /* rows */
+  .row {
+    background:#fff; border-radius:8px; padding:10px 14px; margin-bottom:6px;
+    display:flex; align-items:center; gap:8px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+    transition: background 0.15s;
+  }
+  .row:hover { background:#f0f0f2; }
+  .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .row-t { font-size:0.82em; font-weight:600; color:#1d1d1f; flex-shrink:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }
+  .row-s { font-size:0.75em; color:#86868b; flex:1; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* buttons */
+  .btns { display:flex; gap:4px; flex-shrink:0; margin-left:auto; }
+  .btn-s {
+    background:#f5f5f7; color:#1d1d1f; border:none; padding:2px 8px;
+    border-radius:4px; font-size:0.68em; cursor:pointer; font-weight:600;
+  }
+  .btn-s:hover { background:#e8e8ed; }
+  .btn-s.active { background:#0071e3; color:#fff; }
+  .btn-r {
+    display:inline-block; padding:2px 8px; border-radius:4px;
+    font-size:0.68em; text-decoration:none; background:#0071e3; color:#fff; font-weight:600;
+  }
+  .btn-r:hover { background:#0077ed; }
+  .src { font-size:0.68em; color:#aeaeb2; margin-left:4px; }
+  .hero .btn-s { background:rgba(255,255,255,0.15); color:#fff; }
+  .hero .btn-s:hover { background:rgba(255,255,255,0.25); }
+  .hero .btn-s.active { background:#fff; color:#1d1d1f; }
+  .hero .btn-r { background:rgba(255,255,255,0.2); color:#fff; }
+  .hero .btn-r:hover { background:rgba(255,255,255,0.35); }
+  .hero .src { color:rgba(255,255,255,0.4); }
+
+  .ft { text-align:center; color:#aeaeb2; font-size:0.72em; padding:20px 14px 28px; }
+
+  /* 视频板块 */
+  .vsection { margin-top:14px; }
+  .vsection-title {
+    font-size:0.95em; font-weight:700; color:#9333ea; margin-bottom:10px;
+    padding-left:2px; letter-spacing:0.5px;
+  }
+  .vgrid { display:flex; flex-direction:column; gap:10px; }
+  .vcard {
+    display:flex; gap:12px; background:#fff; border-radius:10px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .vcard:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .vcard-img {
+    width:140px; min-height:80px; flex-shrink:0; background-size:cover; background-position:center;
+    background-color:#e5e7eb; position:relative; display:block; text-decoration:none;
+  }
+  .vcard-dur {
+    position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff;
+    font-size:0.65em; padding:1px 5px; border-radius:3px; font-weight:600;
+  }
+  .vcard-info { flex:1; padding:10px 12px 10px 0; min-width:0; display:flex; flex-direction:column; justify-content:center; }
+  .vcard-t {
+    font-size:0.85em; font-weight:700; color:#1d1d1f; line-height:1.4; margin-bottom:4px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .vcard-meta { font-size:0.72em; color:#86868b; }
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <h1>AI 垂直日报</h1>
+    <div class="sub">2026-06-01 · 14 条精选</div>
+  </div>
+  <div class="wrap">
+  <div class="ov">
+    <h3>今日概览</h3>
+    <ul>
+      <li><strong>产品</strong>：上海：支持多模态智能体开发与应用，有序推进智能驾驶在共享出行、物流运输等多场景应用、MiniMax M3即将发布，可免费试用</li>
+      <li><strong>论文</strong>：全球首次：MWC26 上海将举办"人形机器人点球大战"，宇树科技等 8 支队伍参赛、参演</li>
+      <li><strong>行业</strong>：The solution might be cancelling my AI subscription、Ask AI what goes with chicken and the answer depends on whether it learned from recipes or molecules、Anthropic bans AI tools during job interviews to see how candidates actually think 等5条</li>
+      <li><strong>模型</strong>：AI search agents often confirm what they already know instead of actually researching the web、教皇似乎比Geoffrey Hinton更懂人工智能</li>
+      <li><strong>视频</strong>：【CNA专访黄仁勋完整版】我希望死在工作中｜中国已成为最强大的对手｜老板们不应以AI为由开除员工、[lingorm]260531活动前采访  AI翻、【OneRepublic/采访】【ai中字】Ryan Tedder Teaches Me His Songwriting Secrets 等4条</li>
+    </ul>
+  </div>
+  
+    <div class="hero" data-original-lang="zh" style="background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)">
+      <div class="hero-mask">
+        <div class="hero-t">上海：支持多模态智能体开发与应用，有序推进智能驾驶在共享出行、物流运输等多场景应用</div>
+        <div class="hero-s">上海市人民政府办公厅印发《上海市服务业发展&quot;十五五&quot;规划》，提出发展AI软件技术及服务产业集群。规划支持多模态智能体开发与应用，推动智能客服等工具规模化；有序推进智能驾驶在共享出行、物流运输等多场景应用；做强算运存协同布局的智算云网络，推广...</div>
+        <div class="hero-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://www.ithome.com/0/957/985.htm" class="btn-r" target="_blank">原文</a></span><span class="src">ithome.com</span></div>
+      </div>
+    </div>
+  <div class="tiles">
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #2563eb">
+      <div class="tile-t">MiniMax M3即将发布，可免费试用</div>
+      <div class="tile-s">MiniMax M3即将发布 你现在就可以在OpenCode中免费试用</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button></span><span class="src">x.com</span></div>
+    </div>
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #7c3aed">
+      <div class="tile-t">全球首次：MWC26 上海将举办&quot;人形机器人点球大战&quot;，宇树科技等 8 支队伍参赛、参演</div>
+      <div class="tile-s">全球首次&quot;人形机器人点球大战&quot;将于2026年6月在MWC上海举行。8支中国顶尖具身智能战队将进行自主对抗，无需人工操控或预设脚本。赛事旨在集中展示人形机器人在动态平衡、精准控制与自主决策等方面的技术突破。</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://www.ithome.com/0/957/938.htm" class="btn-r" target="_blank">原文</a></span><span class="src">ithome.com</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #ea580c">
+      <div class="tile-t">The solution might be cancelling my AI subscription</div>
+      <div class="tile-s">The solution might be cancelling my AI subscription I find this post by David Wilson very relatable. David lists 16+ pro...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://simonwillison.net/2026/May/31/the-solution-might-be-cancelling-my-ai-subscription/#atom-everything" class="btn-r" target="_blank">原文</a></span><span class="src">simonwillison.net</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #ea580c">
+      <div class="tile-t">Ask AI what goes with chicken and the answer depends on whether it learned from recipes or molecules</div>
+      <div class="tile-s">With &quot;Epicure,&quot; London-based startup Kaikaku.AI presents three AI models that are the first to clearly separate whether ...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/ask-ai-what-goes-with-chicken-and-the-answer-depends-on-whether-it-learned-from-recipes-or-molecules/" class="btn-r" target="_blank">原文</a></span><span class="src">the-decoder.com</span></div>
+    </div>
+  </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">Anthropic bans AI tools during job interviews to see how candidates actually think</span>
+      <span class="row-s">Anthropic bans AI during job interviews and runs candidates through up to five rounds testing skills, values, and ethica...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/anthropic-bans-ai-tools-during-job-interviews-to-see-how-candidates-actually-think/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">Anthropic study finds men use AI coding agents more than twice as often as women in social science research</span>
+      <span class="row-s">Researchers with typically male names use coding agents more than twice as often as those with typically female names, e...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/anthropic-study-finds-men-use-ai-coding-agents-more-than-twice-as-often-as-women-in-social-science-research/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#ea580c"></span>
+      <span class="row-t">SoftBank plans 75 billion euro AI data center buildout in France</span>
+      <span class="row-s">SoftBank plans to build AI data centers with up to 5 gigawatts of capacity in France, the company&#x27;s largest AI infrastru...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/softbank-plans-75-billion-euro-ai-data-center-buildout-in-france/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="en">
+      <span class="dot" style="background:#0d9488"></span>
+      <span class="row-t">AI search agents often confirm what they already know instead of actually researching the web</span>
+      <span class="row-s">Leading AI search agents like GPT-5.4 and Kimi K2.6 don&#x27;t appear to do much actual research on established benchmarks. T...</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/ai-search-agents-often-confirm-what-they-already-know-instead-of-actually-researching-the-web/" class="btn-r" target="_blank">原文</a></span>
+    </div>
+    <div class="row" data-original-lang="zh">
+      <span class="dot" style="background:#0d9488"></span>
+      <span class="row-t">教皇似乎比Geoffrey Hinton更懂人工智能</span>
+      <span class="row-s">这一观点强调，单纯分析AI的输出内容，无法还原其生成过程与背后的推理逻辑，触及了当前AI可解释性研究的核心挑战。</span>
+      <span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button></span>
+    </div>
+  <div class="vsection">
+    <div class="vsection-title">🎬 视频精选</div>
+    <div class="vgrid">
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116668541967169" target="_blank" class="vcard-img" style="background-image:url('https://i2.hdslb.com/bfs/archive/9cbe289f061035f437527443bca9cccfab0cccdc.jpg')">
+        <span class="vcard-dur">56:16</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">【CNA专访黄仁勋完整版】我希望死在工作中｜中国已成为最强大的对手｜老板们不应以AI为由开除员工</div>
+        <div class="vcard-meta">UP主：B站经济学院　｜　653 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116668172866953" target="_blank" class="vcard-img" style="background-image:url('https://i1.hdslb.com/bfs/archive/01d905c85c36099569165fb55b140e8424c6d5c5.jpg')">
+        <span class="vcard-dur">11:27</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">[lingorm]260531活动前采访  AI翻</div>
+        <div class="vcard-meta">UP主：枕玉听风如　｜　397 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116668726512195" target="_blank" class="vcard-img" style="background-image:url('https://i1.hdslb.com/bfs/archive/7a597e8eb563dcb0df9dcccb2b3aa4be9e100beb.jpg')">
+        <span class="vcard-dur">95:27</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">【OneRepublic/采访】【ai中字】Ryan Tedder Teaches Me His Songwriting Secrets</div>
+        <div class="vcard-meta">UP主：铎铃鸣　｜　180 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116668625917303" target="_blank" class="vcard-img" style="background-image:url('https://i1.hdslb.com/bfs/archive/3be29dbad3084cabda4ec838ea852db58cad8cab.jpg')">
+        <span class="vcard-dur">9:26</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">AI换脸采访</div>
+        <div class="vcard-meta">UP主：晚枫溪云　｜　18 播放</div>
+      </div>
+    </div>
+    </div>
+  </div>
+  </div>
+  <div class="ft">本文由 AI 自动整理 · 内容仅供参考</div>
+
+  <script>
+  async function toggleLang(btn) {
+    var card = btn.closest('[data-original-lang]');
+    var content = card.querySelector('.hero-s, .tile-s, .row-s');
+    if (!content) content = card;
+    var originalLang = card.dataset.originalLang;
+
+    if (card.dataset.translated) {
+      if (card.dataset.showing === 'translated') {
+        content.textContent = card.dataset.originalText;
+        card.dataset.showing = 'original';
+        btn.textContent = originalLang === 'zh' ? 'EN' : '中文';
+        btn.classList.remove('active');
+      } else {
+        content.textContent = card.dataset.translated;
+        card.dataset.showing = 'translated';
+        btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+        btn.classList.add('active');
+      }
+      return;
+    }
+
+    var text = content.textContent;
+    card.dataset.originalText = text;
+    card.dataset.showing = 'original';
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    var targetLang = originalLang === 'zh' ? 'en' : 'zh-CN';
+    var sourceLang = originalLang === 'zh' ? 'zh-CN' : 'en';
+
+    try {
+      var url = 'https://api.mymemory.translated.net/get?q=' +
+                encodeURIComponent(text.substring(0, 500)) +
+                '&langpair=' + sourceLang + '|' + targetLang;
+      var resp = await fetch(url);
+      var data = await resp.json();
+      var translated = data.responseData.translatedText;
+      card.dataset.translated = translated;
+      content.textContent = translated;
+      card.dataset.showing = 'translated';
+      btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+      btn.classList.add('active');
+    } catch(e) {
+      btn.textContent = '失败';
+      setTimeout(function() { btn.textContent = originalLang === 'zh' ? 'EN' : '中文'; }, 2000);
+    }
+    btn.disabled = false;
+  }
+  </script>
+</body>
+</html>
