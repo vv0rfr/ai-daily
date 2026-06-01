@@ -170,12 +170,15 @@ def create_draft(access_token: str, title: str, content: str, thumb_media_id: st
     }
     if thumb_media_id:
         article["thumb_media_id"] = thumb_media_id
-    articles = [article]
+    body = {"articles": [article]}
 
+    # 手动序列化，确保中文不转义为 \uXXXX
+    json_data = json.dumps(body, ensure_ascii=False).encode("utf-8")
     resp = requests.post(
         DRAFT_URL,
         params={"access_token": access_token},
-        json={"articles": articles},
+        data=json_data,
+        headers={"Content-Type": "application/json; charset=utf-8"},
         timeout=30,
     )
 
