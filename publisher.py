@@ -36,12 +36,14 @@ def get_access_token() -> str:
 
 
 def md_to_html(md_content: str) -> str:
-    """将 Markdown 转换为公众号兼容的 HTML"""
+    """将 Markdown 转换为公众号兼容的 HTML（优化移动端排版）"""
     lines = md_content.split("\n")
     html_parts = []
     in_list = False
+    links = []  # 收集原文链接
 
     for line in lines:
+        raw = line
         line = line.strip()
 
         # 跳过空行
@@ -49,89 +51,120 @@ def md_to_html(md_content: str) -> str:
             if in_list:
                 html_parts.append("</ul>")
                 in_list = False
-            html_parts.append("<p><br/></p>")
+            html_parts.append('<p style="margin:12px 0;"><br/></p>')
             continue
 
-        # 标题
-        if line.startswith("# "):
-            if in_list:
-                html_parts.append("</ul>")
-                in_list = False
-            text = line[2:]
-            html_parts.append(f'<h1 style="font-size:22px;font-weight:bold;color:#333;margin:20px 0 10px;">{text}</h1>')
-        elif line.startswith("## "):
+        # 分类标题 ##
+        if line.startswith("## "):
             if in_list:
                 html_parts.append("</ul>")
                 in_list = False
             text = line[3:]
-            html_parts.append(f'<h2 style="font-size:18px;font-weight:bold;color:#333;margin:16px 0 8px;border-bottom:1px solid #eee;padding-bottom:4px;">{text}</h2>')
-        elif line.startswith("### "):
+            emoji_map = {"行业": "🏭", "产品": "🛠️", "论文": "📄", "模型": "🧠", "视频": "🎬", "产业": "🏭"}
+            emoji = ""
+            for k, v in emoji_map.items():
+                if k in text:
+                    emoji = v
+                    break
+            html_parts.append(
+                f'<section style="margin:28px 0 14px;padding:8px 16px;background:#f0f7ff;'
+                f'border-radius:6px;border-left:4px solid #0071e3;">'
+                f'<span style="font-size:17px;font-weight:bold;color:#1a1a1a;">{emoji} {text}</span>'
+                f'</section>'
+            )
+        # 文章标题 #
+        elif line.startswith("# "):
             if in_list:
                 html_parts.append("</ul>")
                 in_list = False
-            text = line[4:]
-            html_parts.append(f'<h3 style="font-size:16px;font-weight:bold;color:#333;margin:12px 0 6px;">{text}</h3>')
+            text = line[2:]
+            html_parts.append(
+                f'<h1 style="font-size:20px;font-weight:bold;color:#1a1a1a;'
+                f'text-align:center;margin:8px 0 4px;letter-spacing:1px;">{text}</h1>'
+            )
         # 引用
         elif line.startswith("> "):
             if in_list:
                 html_parts.append("</ul>")
                 in_list = False
             text = line[2:]
-            html_parts.append(f'<blockquote style="border-left:3px solid #0071e3;padding:8px 12px;margin:8px 0;color:#666;background:#f8f9fa;">{text}</blockquote>')
+            html_parts.append(
+                f'<blockquote style="border-left:3px solid #0071e3;padding:10px 14px;'
+                f'margin:14px 0;color:#555;background:#f8f9fa;border-radius:4px;'
+                f'font-size:14px;">{text}</blockquote>'
+            )
         # 分割线
         elif line == "---":
             if in_list:
                 html_parts.append("</ul>")
                 in_list = False
-            html_parts.append('<hr style="border:none;border-top:1px solid #eee;margin:16px 0;"/>')
-        # 无序列表
+            html_parts.append('<hr style="border:none;border-top:1px solid #e8e8e8;margin:20px 0;"/>')
+        # 列表项
         elif line.startswith("- ") or line.startswith("* "):
             if not in_list:
-                html_parts.append('<ul style="margin:8px 0;padding-left:20px;">')
+                html_parts.append('<ul style="margin:8px 0 14px;padding-left:18px;">')
                 in_list = True
             text = line[2:]
-            text = _parse_inline(text)
-            html_parts.append(f'<li style="margin:4px 0;">{text}</li>')
-        # 有序列表
+            text = _parse_inline(text, links)
+            html_parts.append(f'<li style="margin:6px 0;font-size:15px;line-height:1.6;color:#333;">{text}</li>')
         elif re.match(r"^\d+\.\s", line):
             if not in_list:
-                html_parts.append('<ul style="margin:8px 0;padding-left:20px;">')
+                html_parts.append('<ul style="margin:8px 0 14px;padding-left:18px;">')
                 in_list = True
             text = re.sub(r"^\d+\.\s", "", line)
-            text = _parse_inline(text)
-            html_parts.append(f'<li style="margin:4px 0;">{text}</li>')
+            text = _parse_inline(text, links)
+            html_parts.append(f'<li style="margin:6px 0;font-size:15px;line-height:1.6;color:#333;">{text}</li>')
         # 普通段落
         else:
             if in_list:
                 html_parts.append("</ul>")
                 in_list = False
-            text = _parse_inline(line)
-            html_parts.append(f'<p style="margin:8px 0;line-height:1.8;">{text}</p>')
+            text = _parse_inline(line, links)
+            html_parts.append(
+                f'<p style="margin:10px 0;font-size:15px;line-height:1.75;color:#333;">{text}</p>'
+            )
 
     if in_list:
         html_parts.append("</ul>")
 
+    # 末尾添加原文链接汇总
+    if links:
+        html_parts.append('<hr style="border:none;border-top:1px solid #e8e8e8;margin:24px 0 12px;"/>')
+        html_parts.append(
+            '<p style="font-size:14px;font-weight:bold;color:#666;margin:8px 0;">📎 原文链接</p>'
+        )
+        for i, (title, url) in enumerate(links, 1):
+            html_parts.append(
+                f'<p style="margin:4px 0;font-size:13px;color:#888;line-height:1.6;'
+                f'word-break:break-all;">{i}. {title}<br>'
+                f'<span style="color:#0071e3;">{url}</span></p>'
+            )
+
     return "\n".join(html_parts)
 
 
-def _parse_inline(text: str) -> str:
-    """解析行内格式（加粗、链接）"""
-    # 链接
-    text = re.sub(
-        r"\[([^\]]+)\]\(([^)]+)\)",
-        r'<a href="\2" style="color:#0071e3;text-decoration:none;">\1</a>',
-        text
-    )
+def _parse_inline(text: str, links: list = None) -> str:
+    """解析行内格式（加粗、代码），链接转为纯文本收集"""
+    # 链接：提取并转为纯文本，同时收集到 links 列表
+    def replace_link(m):
+        t, u = m.group(1), m.group(2)
+        if links is not None:
+            links.append((t, u))
+        # 微信不支持外链，显示为带🔗的纯文本
+        return f'<span style="color:#0071e3;">🔗 {t}</span>'
+
+    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", replace_link, text)
+
     # 加粗
     text = re.sub(
         r"\*\*([^*]+)\*\*",
-        r'<strong style="font-weight:bold;">\1</strong>',
+        r'<strong style="font-weight:bold;color:#1a1a1a;">\1</strong>',
         text
     )
     # 行内代码
     text = re.sub(
         r"`([^`]+)`",
-        r'<code style="background:#f5f5f7;padding:2px 4px;border-radius:3px;font-size:0.9em;">\1</code>',
+        r'<code style="background:#f0f0f0;padding:2px 5px;border-radius:3px;font-size:13px;color:#d63384;">\1</code>',
         text
     )
     return text
@@ -159,7 +192,8 @@ def upload_thumb(access_token: str, image_path: str) -> str:
     return data["media_id"]
 
 
-def create_draft(access_token: str, title: str, content: str, thumb_media_id: str = "") -> str:
+def create_draft(access_token: str, title: str, content: str, thumb_media_id: str = "",
+                  content_source_url: str = "") -> str:
     """创建草稿，返回 media_id"""
     article = {
         "title": title,
@@ -170,6 +204,8 @@ def create_draft(access_token: str, title: str, content: str, thumb_media_id: st
     }
     if thumb_media_id:
         article["thumb_media_id"] = thumb_media_id
+    if content_source_url:
+        article["content_source_url"] = content_source_url
     body = {"articles": [article]}
 
     # 手动序列化，确保中文不转义为 \uXXXX
@@ -229,13 +265,37 @@ def publish_article(md_path: str, mode: str = "ai") -> dict:
 
         # 转换为公众号 HTML
         html_content = md_to_html(md_content)
-        # 包装为完整 HTML
+
+        # GitHub HTML 页面作为"阅读原文"链接
+        repo_url = "https://vv0rfr.github.io/ai-daily"
+        source_url = f"{repo_url}/output/{today}-{mode}.html"
+        if mode == "ai":
+            repo_display = "AI 频道"
+        elif mode == "tech":
+            repo_display = "科技频道"
+        else:
+            repo_display = "全频道"
+
+        # 包装为完整 HTML（微信文章标准样式）
         full_html = f"""
-<div style="max-width:600px;margin:0 auto;padding:16px;">
-{html_content}
-<hr style="border:none;border-top:1px solid #eee;margin:16px 0;"/>
-<p style="text-align:center;color:#999;font-size:12px;">本文由 AI 自动整理 · 内容仅供参考</p>
+<section style="max-width:640px;margin:0 auto;padding:10px 16px 20px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;">
+
+<div style="text-align:center;padding:20px 0 8px;">
+  <span style="display:inline-block;background:#0071e3;color:#fff;font-size:12px;padding:3px 12px;border-radius:12px;letter-spacing:2px;">{repo_display}</span>
 </div>
+
+{html_content}
+
+<hr style="border:none;border-top:1px solid #e8e8e8;margin:24px 0 12px;"/>
+
+<section style="background:#f8f9fa;border-radius:8px;padding:14px 16px;margin:16px 0;">
+  <p style="margin:0 0 6px;font-size:13px;color:#666;line-height:1.6;">
+    📬 本文由 AI 自动整理 · 每日 8:00 更新<br>
+    💡 点击下方「阅读原文」查看带跳转链接的网页版
+  </p>
+</section>
+
+</section>
 """
 
         # 获取 access_token
@@ -251,7 +311,7 @@ def publish_article(md_path: str, mode: str = "ai") -> dict:
 
         # 创建草稿
         print("  [publisher] 创建草稿...")
-        draft_id = create_draft(token, title, full_html, thumb_id)
+        draft_id = create_draft(token, title, full_html, thumb_id, source_url)
         result["draft_id"] = draft_id
         print(f"  [publisher] 草稿创建成功！可在公众号后台手动发布")
 
