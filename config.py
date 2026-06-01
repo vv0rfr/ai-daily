@@ -26,8 +26,8 @@ TECH_FEEDS = {
 }
 
 # 筛选配置
-TOP_N = 10  # 每次生成文章取 Top N 条
-VIDEO_TOP_N = 5  # 视频取 Top N 条
+TOP_N = 5  # 每次生成文章取 Top N 条（精简排版）
+VIDEO_TOP_N = 3  # 视频取 Top N 条
 
 # B站视频搜索关键词
 BILIBILI_KEYWORDS = [

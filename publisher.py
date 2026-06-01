@@ -82,17 +82,31 @@ def md_to_html(md_content: str) -> str:
                 f'<h1 style="font-size:20px;font-weight:bold;color:#1a1a1a;'
                 f'text-align:center;margin:8px 0 4px;letter-spacing:1px;">{text}</h1>'
             )
-        # 引用
+        # 引用（区分来源、链接和普通引用）
         elif line.startswith("> "):
             if in_list:
                 html_parts.append("</ul>")
                 in_list = False
             text = line[2:]
-            html_parts.append(
-                f'<blockquote style="border-left:3px solid #0071e3;padding:10px 14px;'
-                f'margin:14px 0;color:#555;background:#f8f9fa;border-radius:4px;'
-                f'font-size:14px;">{text}</blockquote>'
-            )
+            # 来源/UP主行 → 灰色小字
+            if text.startswith("来源：") or text.startswith("UP主"):
+                text = _parse_inline(text, links)
+                html_parts.append(
+                    f'<p style="margin:2px 0;font-size:13px;color:#999;line-height:1.5;">{text}</p>'
+                )
+            # [🔗 阅读原文] / [🔗 观看视频] → 蓝色链接文字
+            elif "🔗" in text:
+                text = _parse_inline(text, links)
+                html_parts.append(
+                    f'<p style="margin:2px 0 12px;font-size:13px;color:#0071e3;line-height:1.5;">{text}</p>'
+                )
+            # 普通引用
+            else:
+                html_parts.append(
+                    f'<blockquote style="border-left:3px solid #0071e3;padding:10px 14px;'
+                    f'margin:14px 0;color:#555;background:#f8f9fa;border-radius:4px;'
+                    f'font-size:14px;">{text}</blockquote>'
+                )
         # 分割线
         elif line == "---":
             if in_list:
@@ -126,19 +140,6 @@ def md_to_html(md_content: str) -> str:
 
     if in_list:
         html_parts.append("</ul>")
-
-    # 末尾添加原文链接汇总
-    if links:
-        html_parts.append('<hr style="border:none;border-top:1px solid #e8e8e8;margin:24px 0 12px;"/>')
-        html_parts.append(
-            '<p style="font-size:14px;font-weight:bold;color:#666;margin:8px 0;">📎 原文链接</p>'
-        )
-        for i, (title, url) in enumerate(links, 1):
-            html_parts.append(
-                f'<p style="margin:4px 0;font-size:13px;color:#888;line-height:1.6;'
-                f'word-break:break-all;">{i}. {title}<br>'
-                f'<span style="color:#0071e3;">{url}</span></p>'
-            )
 
     return "\n".join(html_parts)
 

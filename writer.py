@@ -26,11 +26,13 @@ SYSTEM_PROMPT = """你是一位资深 AI 科技媒体编辑，负责将每日 AI
 
 def generate_overview(groups: dict) -> str:
     """生成今日内容概览"""
-    lines = ["**今日概览：**\n"]
+    lines = ["**📋 今日看点**\n"]
     for cat, items in groups.items():
-        titles = "、".join(item["title"] for item in items[:3])
-        more = f" 等{len(items)}条" if len(items) > 3 else ""
-        lines.append(f"- **{cat}**：{titles}{more}")
+        emoji_map = {"行业": "🏭", "产品": "🛠️", "论文": "📄", "模型": "🧠", "视频": "🎬", "产业": "🏭"}
+        emoji = emoji_map.get(cat, "•")
+        titles = "、".join(item["title"] for item in items[:2])
+        more = f" 等{len(items)}条" if len(items) > 2 else ""
+        lines.append(f"- {emoji} **{cat}**：{titles}{more}")
     return "\n".join(lines)
 
 
@@ -80,36 +82,65 @@ def generate_article(groups: dict) -> str:
 
 
 def generate_from_template(groups: dict) -> str:
-    """不用 API，直接用模板拼接文章（备用方案）"""
+    """不用 API，直接用模板拼接文章（精排版）"""
     today = datetime.now().strftime("%Y-%m-%d")
     total = sum(len(v) for v in groups.values())
     lines = [f"# AI 日报 · {today}\n"]
-    lines.append(f"> 今日 AI 圈动态速览，共 {total} 条精选\n")
+
+    # 开场
+    lines.append(f"> 每日 8:00 精选 {total} 条 AI 领域动态，快速了解行业脉搏\n")
 
     lines.append(generate_overview(groups))
     lines.append("\n---\n")
 
+    cat_index = 0
+    link_index = 0
+    all_links = []
+
     for cat, items in groups.items():
-        lines.append(f"## {cat}\n")
+        emoji_map = {"行业": "🏭", "产品": "🛠️", "论文": "📄", "模型": "🧠", "视频": "🎬", "产业": "🏭"}
+        emoji = emoji_map.get(cat, "📌")
+        lines.append(f"## {emoji} {cat}\n")
+
         for item in items:
+            link_index += 1
+            title = item["title"]
+            summary = item.get("summary", "")
+
             if item.get("type") == "video":
                 play = item.get("play", 0)
                 dur = item.get("duration", "")
                 play_str = f"{play // 10000}万" if play >= 10000 else str(play)
-                lines.append(f"### 🎬 {item['title']}\n")
-                if item["summary"]:
-                    lines.append(f"{item['summary']}\n")
-                lines.append(f"UP主：{item['author']}　｜　播放：{play_str}　｜　时长：{dur}")
-                lines.append(f"[观看视频]({item['link']})\n")
+                author = item.get("author", "")
+                lines.append(f"### 🎬 {title}\n")
+                if summary:
+                    # 摘要精简到 80 字以内
+                    short_summary = summary[:80] + "..." if len(summary) > 80 else summary
+                    lines.append(f"{short_summary}\n")
+                lines.append(f"> UP主：{author}　播放：{play_str}　时长：{dur}")
+                lines.append(f"> [🔗 观看视频]({item['link']})\n")
+                all_links.append((f"🎬 {title}", item['link']))
             else:
-                lines.append(f"### {item['title']}\n")
-                if item["summary"]:
-                    lines.append(f"{item['summary']}\n")
-                lines.append(f"来源：{item['author']}")
-                lines.append(f"[阅读原文]({item['link']})\n")
+                lines.append(f"### {title}\n")
+                if summary:
+                    # 摘要精简到 100 字以内
+                    short_summary = summary[:100] + "..." if len(summary) > 100 else summary
+                    lines.append(f"{short_summary}\n")
+                source = item.get("author", "")
+                if source:
+                    lines.append(f"> 来源：{source}")
+                lines.append(f"> [🔗 阅读原文]({item['link']})\n")
+                all_links.append((title, item['link']))
+
+    # 原文链接汇总
+    lines.append("---\n")
+    lines.append("### 📎 原文链接\n")
+    for i, (t, url) in enumerate(all_links, 1):
+        lines.append(f"{i}. [{t}]({url})")
+    lines.append("")
 
     lines.append("---\n")
-    lines.append("*本文由 AI 自动整理*")
+    lines.append("*本文由 AI 自动整理 · 每日 8:00 更新*")
 
     article = "\n".join(lines)
     print(f"  [writer] 模板生成完成，{len(article)} 字符")
