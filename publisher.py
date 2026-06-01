@@ -161,14 +161,16 @@ def upload_thumb(access_token: str, image_path: str) -> str:
 
 def create_draft(access_token: str, title: str, content: str, thumb_media_id: str = "") -> str:
     """创建草稿，返回 media_id"""
-    articles = [{
+    article = {
         "title": title,
         "author": "AI 日报",
         "content": content,
-        "thumb_media_id": thumb_media_id,
         "need_open_comment": 1,
         "only_fans_can_comment": 0,
-    }]
+    }
+    if thumb_media_id:
+        article["thumb_media_id"] = thumb_media_id
+    articles = [article]
 
     resp = requests.post(
         DRAFT_URL,
@@ -248,14 +250,23 @@ def publish_article(md_path: str, mode: str = "ai") -> dict:
         print("  [publisher] 创建草稿...")
         draft_id = create_draft(token, title, full_html, thumb_id)
         result["draft_id"] = draft_id
+        print(f"  [publisher] 草稿创建成功！可在公众号后台手动发布")
 
-        # 发布
-        print("  [publisher] 发布文章...")
-        publish_id = publish_draft(token, draft_id)
-        result["publish_id"] = publish_id
-        result["success"] = True
-
-        print(f"  [publisher] 发布成功！publish_id: {publish_id}")
+        # 尝试发布（个人订阅号可能无此权限）
+        try:
+            print("  [publisher] 尝试自动发布...")
+            publish_id = publish_draft(token, draft_id)
+            result["publish_id"] = publish_id
+            result["success"] = True
+            print(f"  [publisher] 自动发布成功！publish_id: {publish_id}")
+        except ValueError as pub_e:
+            err_msg = str(pub_e)
+            if "48001" in err_msg:
+                print("  [publisher] 个人订阅号无自动发布权限，草稿已存入草稿箱，请手动发布")
+                result["success"] = True
+                result["publish_notice"] = "已存入草稿箱，请手动发布"
+            else:
+                raise
 
     except Exception as e:
         result["error"] = str(e)
