@@ -49,9 +49,13 @@ AI_CATEGORIES = ["模型", "产品", "行业", "论文", "技巧"]
 # 科技频道分类
 TECH_CATEGORIES = ["AI/大模型", "产品/创业", "开发/技术", "硬件/芯片", "行业/商业"]
 
-# 公众号配置（Phase 2 再填）
+# 公众号配置
 WECHAT_APP_ID = os.getenv("WECHAT_APP_ID", "")
 WECHAT_APP_SECRET = os.getenv("WECHAT_APP_SECRET", "")
+
+# 配图配置
+UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY", "")  # Unsplash API（免费，可选）
+# 无 Key 时自动使用 Picsum 随机图（免费，无需注册）
 
 # 输出目录
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")

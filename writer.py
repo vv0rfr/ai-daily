@@ -5,6 +5,7 @@ import html
 import urllib.parse
 from datetime import datetime
 from config import ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, DEEPSEEK_API_URL, OUTPUT_DIR
+from imager import get_image_url, batch_get_images
 
 
 SYSTEM_PROMPT = """你是一位资深 AI 科技媒体编辑，负责将每日 AI 动态整理成公众号文章。
@@ -203,7 +204,7 @@ def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报"
     article_flat = [it for it in items_flat if it.get("type") != "video"]
     video_flat = [it for it in items_flat if it.get("type") == "video"]
 
-    def _render_item(item, index, in_video_section=False):
+    def _render_item(item, index, image_url=None, in_video_section=False):
         """渲染单个条目卡片"""
         cat = html.escape(item["category"])
         title = html.escape(item["title"])
@@ -217,7 +218,7 @@ def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报"
         is_video = item.get("type") == "video"
 
         if is_video:
-            # 视频卡片
+            # 视频卡片（使用 B站 缩略图，不变）
             thumb = html.escape(item.get("thumbnail", ""))
             play = item.get("play", 0)
             dur = html.escape(item.get("duration", ""))
@@ -241,9 +242,13 @@ def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报"
             btns = f'<span class="btns">{lang_btn}{read_btn}</span>'
 
             if index == 1:
+                # 头条（hero）— 全宽背景图
                 grad = gradients.get(cat, "linear-gradient(135deg, #374151 0%, #1f2937 100%)")
+                bg_style = grad
+                if image_url:
+                    bg_style = f"url('{image_url}'), {grad}"
                 return f"""
-    <div class="hero" data-original-lang="{lang}" style="background:{grad}">
+    <div class="hero" data-original-lang="{lang}" style="background-image:{bg_style};background-size:cover;background-position:center;background-blend-mode:overlay;">
       <div class="hero-mask">
         <div class="hero-t">{title}</div>
         <div class="hero-s">{summary}</div>
@@ -251,8 +256,13 @@ def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报"
       </div>
     </div>"""
             elif index <= 5:
+                # 小卡片（tile）— 上方配图
+                img_html = ""
+                if image_url:
+                    img_html = f'<div class="tile-img" style="background-image:url(\'{image_url}\')"></div>'
                 return f"""
     <div class="tile" data-original-lang="{lang}" style="border-top:3px solid #{color}">
+      {img_html}
       <div class="tile-t">{title}</div>
       <div class="tile-s">{summary}</div>
       <div class="tile-b">{btns}<span class="src">{domain}</span></div>
@@ -266,12 +276,19 @@ def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报"
       {btns}
     </div>"""
 
-    # 渲染文章部分
+    # 渲染文章部分（批量并行获取配图）
+    card_images = {}  # 收集图片归属信息
+    img_results = batch_get_images(article_flat)
     cards_html = ""
     for i, item in enumerate(article_flat, 1):
+        # 从批量结果中取配图
+        item_key = str(id(item))
+        img_url, attr = img_results.get(item_key, (None, None))
+        if attr:
+            card_images[img_url] = attr
         if i == 2:
             cards_html += '\n  <div class="tiles">'
-        cards_html += _render_item(item, i)
+        cards_html += _render_item(item, i, image_url=img_url)
         if i == 5:
             cards_html += '\n  </div>'
     # 如果文章不足5条但tiles已开启，关闭tiles
@@ -288,132 +305,208 @@ def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报"
         cards_html += '\n    </div>'
         cards_html += '\n  </div>'
 
+    # 图片署名
+    creds = ""
+    if card_images:
+        names = []
+        for url, attr in card_images.items():
+            name = html.escape(attr.get("name", ""))
+            link = html.escape(attr.get("link", ""))
+            if name and link:
+                names.append(f'<a href="{link}" target="_blank" style="color:#aeaeb2;text-decoration:underline;">{name}</a>')
+        if names:
+            creds = " · 配图：" + "、".join(names) + "（Unsplash）"
+
     page_html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{label} · {date_str}</title>
-<style>
-  * {{ margin:0; padding:0; box-sizing:border-box; }}
-  body {{
-    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: #f5f5f7; color: #1d1d1f; line-height: 1.5;
-    max-width: 740px; margin: 0 auto;
-  }}
+	<style>
+	  :root {{
+	    --bg-page: #f5f5f7;
+	    --bg-card: #fff;
+	    --text-primary: #1d1d1f;
+	    --text-secondary: #86868b;
+	    --text-tertiary: #aeaeb2;
+	    --text-ov: #47474a;
+	    --shadow: 0 1px 3px rgba(0,0,0,0.04);
+	    --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+	  }}
+	  .dark-mode {{
+	    --bg-page: #1a1a2e;
+	    --bg-card: #1e293b;
+	    --text-primary: #e2e8f0;
+	    --text-secondary: #94a3b8;
+	    --text-tertiary: #64748b;
+	    --text-ov: #94a3b8;
+	    --shadow: 0 1px 3px rgba(0,0,0,0.2);
+	    --shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
+	  }}
+	  * {{ margin:0; padding:0; box-sizing:border-box; }}
+	  body {{
+	    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+	    background: var(--bg-page); color: var(--text-primary); line-height: 1.6;
+	    max-width: 740px; margin: 0 auto;
+	    transition: background 0.2s, color 0.2s;
+	  }}
 
-  /* header */
-  .hdr {{
-    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
-    color:#fff; padding: 36px 24px 28px; text-align:center;
-  }}
-  .hdr h1 {{ font-size:1.6em; font-weight:800; letter-spacing:2px; }}
-  .hdr .sub {{ font-size:0.85em; color:rgba(255,255,255,0.6); margin-top:6px; }}
+	  /* dark mode toggle */
+	  .theme-toggle {{
+	    position:fixed; top:12px; right:12px; z-index:999;
+	    width:36px; height:36px; border-radius:50%; border:none;
+	    background:rgba(255,255,255,0.15); color:#fff; font-size:16px;
+	    cursor:pointer; backdrop-filter:blur(4px);
+	    transition:background 0.2s;
+	  }}
+	  .theme-toggle:hover {{ background:rgba(255,255,255,0.3); }}
 
-  .wrap {{ padding: 16px 14px; }}
+	  /* header */
+	  .hdr {{
+	    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+	    color:#fff; padding: 36px 24px 28px; text-align:center;
+	  }}
+	  .hdr h1 {{ font-size:clamp(1.2em,4vw,1.6em); font-weight:800; letter-spacing:2px; }}
+	  .hdr .sub {{ font-size:clamp(0.75em,2.5vw,0.85em); color:rgba(255,255,255,0.6); margin-top:6px; }}
 
-  /* 概览 */
-  .ov {{
-    background:#fff; border-radius:10px; padding:14px 16px; margin-bottom:16px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.04);
-  }}
-  .ov h3 {{ font-size:0.8em; color:#86868b; font-weight:600; margin-bottom:8px; letter-spacing:1px; }}
-  .ov li {{ font-size:0.82em; color:#47474a; padding:3px 0; list-style:none; }}
-  .ov li strong {{ color:#1d1d1f; }}
+	  .wrap {{ padding: 16px 14px; }}
 
-  /* hero */
-  .hero {{
-    border-radius:14px; overflow:hidden; margin-bottom:14px;
-    min-height:200px; display:flex; align-items:flex-end; color:#fff;
-  }}
-  .hero-mask {{
-    width:100%; padding:22px 20px;
-    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 55%, transparent 100%);
-  }}
-  .hero-t {{ font-size:1.15em; font-weight:700; margin-bottom:6px; line-height:1.35; }}
-  .hero-s {{ font-size:0.82em; color:rgba(255,255,255,0.8); margin-bottom:10px; }}
-  .hero-b {{ display:flex; align-items:center; gap:6px; }}
+	  /* overview */
+	  .ov {{
+	    background:var(--bg-card); border-radius:12px; padding:14px 16px; margin-bottom:16px;
+	    box-shadow:var(--shadow); transition:background 0.2s,box-shadow 0.2s;
+	  }}
+	  .ov h3 {{ font-size:0.82em; color:var(--text-secondary); font-weight:600; margin-bottom:8px; letter-spacing:1px; }}
+	  .ov li {{ font-size:0.85em; color:var(--text-ov); padding:3px 0; list-style:none; }}
+	  .ov li strong {{ color:var(--text-primary); }}
 
-  /* tile grid */
-  .tiles {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }}
-  .tile {{
-    background:#fff; border-radius:10px; padding:14px;
-    box-shadow:0 1px 3px rgba(0,0,0,0.04);
-    transition: transform 0.15s, box-shadow 0.15s;
-  }}
-  .tile:hover {{ transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }}
-  .tile-t {{ font-size:0.88em; font-weight:700; color:#1d1d1f; margin-bottom:4px; line-height:1.4; }}
-  .tile-s {{ font-size:0.76em; color:#86868b; line-height:1.5; margin-bottom:8px;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }}
-  .tile-b {{ display:flex; align-items:center; gap:6px; }}
+	  /* hero */
+	  .hero {{
+	    border-radius:14px; overflow:hidden; margin-bottom:14px;
+	    min-height:200px; display:flex; align-items:flex-end; color:#fff;
+	    transition: transform 0.2s;
+	  }}
+	  .hero:hover {{ transform:scale(1.01); }}
+	  .hero-mask {{
+	    width:100%; padding:22px 20px;
+	    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 55%, transparent 100%);
+	  }}
+	  .hero-t {{ font-size:clamp(1em,3.5vw,1.15em); font-weight:700; margin-bottom:6px; line-height:1.4; }}
+	  .hero-s {{ font-size:clamp(0.78em,2.5vw,0.85em); color:rgba(255,255,255,0.8); margin-bottom:10px; }}
+	  .hero-b {{ display:flex; align-items:center; gap:6px; }}
 
-  /* rows */
-  .row {{
-    background:#fff; border-radius:8px; padding:10px 14px; margin-bottom:6px;
-    display:flex; align-items:center; gap:8px;
-    box-shadow:0 1px 2px rgba(0,0,0,0.03);
-    transition: background 0.15s;
-  }}
-  .row:hover {{ background:#f0f0f2; }}
-  .dot {{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }}
-  .row-t {{ font-size:0.82em; font-weight:600; color:#1d1d1f; flex-shrink:0;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }}
-  .row-s {{ font-size:0.75em; color:#86868b; flex:1; min-width:0;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
+	  /* tile grid */
+	  .tiles {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }}
+	  .tile {{
+	    background:var(--bg-card); border-radius:12px; padding:14px;
+	    box-shadow:var(--shadow); transition:transform 0.15s,box-shadow 0.2s,background 0.2s;
+	  }}
+	  .tile:hover {{ transform:translateY(-2px); box-shadow:var(--shadow-hover); }}
+	  .tile-t {{ font-size:clamp(0.82em,2.8vw,0.9em); font-weight:700; color:var(--text-primary); margin-bottom:4px; line-height:1.4; }}
+	  .tile-s {{ font-size:clamp(0.74em,2.5vw,0.8em); color:var(--text-secondary); line-height:1.5; margin-bottom:8px;
+	    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }}
+	  .tile-b {{ display:flex; align-items:center; gap:6px; }}
+	  .tile-img {{
+	    width:100%; height:140px; border-radius:8px; margin-bottom:10px;
+	    background-size:cover; background-position:center; background-color:var(--bg-page);
+	    transition: transform 0.2s;
+	  }}
+	  .tile:hover .tile-img {{ transform:scale(1.02); }}
 
-  /* buttons */
-  .btns {{ display:flex; gap:4px; flex-shrink:0; margin-left:auto; }}
-  .btn-s {{
-    background:#f5f5f7; color:#1d1d1f; border:none; padding:2px 8px;
-    border-radius:4px; font-size:0.68em; cursor:pointer; font-weight:600;
-  }}
-  .btn-s:hover {{ background:#e8e8ed; }}
-  .btn-s.active {{ background:#0071e3; color:#fff; }}
-  .btn-r {{
-    display:inline-block; padding:2px 8px; border-radius:4px;
-    font-size:0.68em; text-decoration:none; background:#0071e3; color:#fff; font-weight:600;
-  }}
-  .btn-r:hover {{ background:#0077ed; }}
-  .src {{ font-size:0.68em; color:#aeaeb2; margin-left:4px; }}
-  .hero .btn-s {{ background:rgba(255,255,255,0.15); color:#fff; }}
-  .hero .btn-s:hover {{ background:rgba(255,255,255,0.25); }}
-  .hero .btn-s.active {{ background:#fff; color:#1d1d1f; }}
-  .hero .btn-r {{ background:rgba(255,255,255,0.2); color:#fff; }}
-  .hero .btn-r:hover {{ background:rgba(255,255,255,0.35); }}
-  .hero .src {{ color:rgba(255,255,255,0.4); }}
+	  /* rows */
+	  .row {{
+	    background:var(--bg-card); border-radius:10px; padding:10px 14px; margin-bottom:6px;
+	    display:flex; align-items:center; gap:8px;
+	    box-shadow:var(--shadow); transition:background 0.2s,box-shadow 0.2s;
+	  }}
+	  .row:hover {{ background:color-mix(in srgb, var(--bg-card) 95%, #000); }}
+	  .dot {{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }}
+	  .row-t {{ font-size:clamp(0.78em,2.5vw,0.85em); font-weight:600; color:var(--text-primary); flex-shrink:0;
+	    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }}
+	  .row-s {{ font-size:clamp(0.72em,2.3vw,0.78em); color:var(--text-secondary); flex:1; min-width:0;
+	    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
 
-  .ft {{ text-align:center; color:#aeaeb2; font-size:0.72em; padding:20px 14px 28px; }}
+	  /* buttons */
+	  .btns {{ display:flex; gap:4px; flex-shrink:0; margin-left:auto; }}
+	  .btn-s {{
+	    background:var(--bg-page); color:var(--text-primary); border:none; padding:2px 8px;
+	    border-radius:4px; font-size:0.7em; cursor:pointer; font-weight:600;
+	  }}
+	  .btn-s:hover {{ background:color-mix(in srgb, var(--bg-page) 90%, #000); }}
+	  .btn-s.active {{ background:#0071e3; color:#fff; }}
+	  .btn-r {{
+	    display:inline-block; padding:2px 8px; border-radius:4px;
+	    font-size:0.7em; text-decoration:none; background:#0071e3; color:#fff; font-weight:600;
+	  }}
+	  .btn-r:hover {{ background:#0077ed; }}
+	  .src {{ font-size:0.7em; color:var(--text-tertiary); margin-left:4px; }}
+	  .hero .btn-s {{ background:rgba(255,255,255,0.15); color:#fff; }}
+	  .hero .btn-s:hover {{ background:rgba(255,255,255,0.25); }}
+	  .hero .btn-s.active {{ background:#fff; color:#1d1d1f; }}
+	  .hero .btn-r {{ background:rgba(255,255,255,0.2); color:#fff; }}
+	  .hero .btn-r:hover {{ background:rgba(255,255,255,0.35); }}
+	  .hero .src {{ color:rgba(255,255,255,0.4); }}
 
-  /* 视频板块 */
-  .vsection {{ margin-top:14px; }}
-  .vsection-title {{
-    font-size:0.95em; font-weight:700; color:#9333ea; margin-bottom:10px;
-    padding-left:2px; letter-spacing:0.5px;
-  }}
-  .vgrid {{ display:flex; flex-direction:column; gap:10px; }}
-  .vcard {{
-    display:flex; gap:12px; background:#fff; border-radius:10px; overflow:hidden;
-    box-shadow:0 1px 3px rgba(0,0,0,0.04);
-    transition: transform 0.15s, box-shadow 0.15s;
-  }}
-  .vcard:hover {{ transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }}
-  .vcard-img {{
-    width:140px; min-height:80px; flex-shrink:0; background-size:cover; background-position:center;
-    background-color:#e5e7eb; position:relative; display:block; text-decoration:none;
-  }}
-  .vcard-dur {{
-    position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff;
-    font-size:0.65em; padding:1px 5px; border-radius:3px; font-weight:600;
-  }}
-  .vcard-info {{ flex:1; padding:10px 12px 10px 0; min-width:0; display:flex; flex-direction:column; justify-content:center; }}
-  .vcard-t {{
-    font-size:0.85em; font-weight:700; color:#1d1d1f; line-height:1.4; margin-bottom:4px;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-  }}
-  .vcard-meta {{ font-size:0.72em; color:#86868b; }}
-</style>
+	  .ft {{ text-align:center; color:var(--text-tertiary); font-size:0.75em; padding:20px 14px 28px; }}
+
+	  /* video section */
+	  .vsection {{ margin-top:14px; }}
+	  .vsection-title {{
+	    font-size:clamp(0.85em,3vw,1em); font-weight:700; color:#9333ea; margin-bottom:10px;
+	    padding-left:2px; letter-spacing:0.5px;
+	  }}
+	  .vgrid {{ display:flex; flex-direction:column; gap:10px; }}
+	  .vcard {{
+	    display:flex; gap:12px; background:var(--bg-card); border-radius:12px; overflow:hidden;
+	    box-shadow:var(--shadow); transition:transform 0.15s,box-shadow 0.2s,background 0.2s;
+	  }}
+	  .vcard:hover {{ transform:translateY(-2px); box-shadow:var(--shadow-hover); }}
+	  .vcard-img {{
+	    width:140px; min-height:80px; flex-shrink:0; background-size:cover; background-position:center;
+	    background-color:var(--bg-page); position:relative; display:block; text-decoration:none;
+	  }}
+	  .vcard-dur {{
+	    position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff;
+	    font-size:0.65em; padding:1px 5px; border-radius:3px; font-weight:600;
+	  }}
+	  .vcard-info {{ flex:1; padding:10px 12px 10px 0; min-width:0; display:flex; flex-direction:column; justify-content:center; }}
+	  .vcard-t {{
+	    font-size:clamp(0.8em,2.8vw,0.88em); font-weight:700; color:var(--text-primary); line-height:1.4; margin-bottom:4px;
+	    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+	    transition:color 0.2s;
+	  }}
+	  .vcard-meta {{ font-size:0.74em; color:var(--text-secondary); }}
+
+	  /* mobile */
+	  @media (max-width:480px) {{
+	    .hdr {{ padding:28px 16px 22px; }}
+	    .wrap {{ padding:12px 10px; }}
+	    .tiles {{ grid-template-columns:1fr; gap:8px; }}
+	    .tile {{ padding:12px; }}
+	    .tile-img {{ height:120px; }}
+	    .hero {{ min-height:160px; border-radius:10px; }}
+	    .hero-mask {{ padding:16px 14px; }}
+	    .vcard-img {{ width:110px; min-height:70px; }}
+	  }}
+
+	  /* auto dark mode */
+	  @media (prefers-color-scheme: dark) {{
+	    :root:not(.light-mode) {{
+	      --bg-page: #1a1a2e;
+	      --bg-card: #1e293b;
+	      --text-primary: #e2e8f0;
+	      --text-secondary: #94a3b8;
+	      --text-tertiary: #64748b;
+	      --text-ov: #94a3b8;
+	      --shadow: 0 1px 3px rgba(0,0,0,0.2);
+	      --shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
+	    }}
+	  }}
+	</style>
 </head>
 <body>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
   <div class="hdr">
     <h1>{label}</h1>
     <div class="sub">{date_str} · {len(items_flat)} 条精选</div>
@@ -436,7 +529,7 @@ def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报"
   </div>
   {cards_html}
   </div>
-  <div class="ft">本文由 AI 自动整理 · 内容仅供参考</div>
+  <div class="ft">本文由 AI 自动整理 · 内容仅供参考{creds}</div>
 
   <script>
   async function toggleLang(btn) {{
@@ -487,6 +580,22 @@ def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报"
     }}
     btn.disabled = false;
   }}
+
+  function toggleTheme() {{
+    var body = document.body;
+    var btn = document.getElementById('themeBtn');
+    body.classList.toggle('dark-mode');
+    body.classList.remove('light-mode');
+    btn.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
+    try {{ localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light'); }} catch(e) {{}}
+  }}
+  try {{
+    if (localStorage.getItem('theme') === 'dark') {{
+      document.body.classList.add('dark-mode');
+      document.getElementById('themeBtn').textContent = '☀️';
+    }}
+  }} catch(e) {{}}
+	
   </script>
 </body>
 </html>"""

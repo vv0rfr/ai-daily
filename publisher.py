@@ -61,9 +61,12 @@ def md_to_html(md_content: str) -> str:
                 in_list = False
             text = line[4:]
             text = _parse_inline(text)
+            # 检测是否带 🎬 标记（视频条目）
+            video_tag = "🎬 " in text
+            left_color = "#9333ea" if video_tag else "#666"
             html_parts.append(
-                f'<section style="margin:18px 0 6px;padding:10px 14px;'
-                f'background:#f5f7fa;border-radius:8px;border-left:3px solid #666;">'
+                f'<section style="margin:18px 0 6px;padding:12px 14px;'
+                f'background:#f5f7fa;border-radius:8px;border-left:3px solid {left_color};">'
                 f'<span style="font-size:16px;font-weight:bold;color:#1a1a1a;line-height:1.5;">'
                 f'{text}</span></section>'
             )
@@ -73,17 +76,29 @@ def md_to_html(md_content: str) -> str:
                 html_parts.append("</ul>")
                 in_list = False
             text = line[3:]
-            emoji_map = {"行业": "🏭", "产品": "🛠️", "论文": "📄", "模型": "🧠", "视频": "🎬", "产业": "🏭"}
-            emoji = ""
-            for k, v in emoji_map.items():
-                if k in text:
-                    emoji = v
+            # 分类配色（用子串匹配，支持"行业动态"→"行业"）
+            cat_colors = [
+                ("行业", "#ea580c", "#fff7ed"),
+                ("产品", "#2563eb", "#eff6ff"),
+                ("论文", "#7c3aed", "#f5f3ff"),
+                ("模型", "#0d9488", "#f0fdfa"),
+                ("视频", "#9333ea", "#faf5ff"),
+                ("产业", "#ea580c", "#fff7ed"),
+                ("硬件", "#dc2626", "#fef2f2"),
+                ("开发", "#6b7280", "#f9fafb"),
+                ("技巧", "#e11d48", "#fff1f2"),
+            ]
+            color, bg = "#0071e3", "#f0f7ff"
+            for keyword, c, b in cat_colors:
+                if keyword in text:
+                    color, bg = c, b
                     break
             html_parts.append(
-                f'<section style="margin:28px 0 14px;padding:8px 16px;background:#f0f7ff;'
-                f'border-radius:6px;border-left:4px solid #0071e3;">'
-                f'<span style="font-size:17px;font-weight:bold;color:#1a1a1a;">{emoji} {text}</span>'
-                f'</section>'
+                f'<section style="margin:28px 0 14px;padding:0;'
+                f'border-radius:8px;overflow:hidden;">'
+                f'<div style="background:{bg};padding:10px 16px;border-left:4px solid {color};">'
+                f'<span style="font-size:17px;font-weight:700;color:{color};">{text}</span>'
+                f'</div></section>'
             )
         # 文章标题 #
         elif line.startswith("# "):
@@ -115,10 +130,15 @@ def md_to_html(md_content: str) -> str:
                 in_list = False
             text = line[2:]
             # 来源/UP主行 → 灰色小字
-            if text.startswith("来源：") or text.startswith("UP主"):
+            if text.startswith("来源："):
                 text = _parse_inline(text, links)
                 html_parts.append(
-                    f'<p style="margin:2px 0;font-size:13px;color:#999;line-height:1.5;">{text}</p>'
+                    f'<p style="margin:2px 0;font-size:12px;color:#999;line-height:1.5;">📎 {text[3:]}</p>'
+                )
+            elif text.startswith("UP主"):
+                text = _parse_inline(text, links)
+                html_parts.append(
+                    f'<p style="margin:2px 0;font-size:12px;color:#999;line-height:1.5;">🎬 {text}</p>'
                 )
             # [🔗 阅读原文] / [🔗 观看视频] → 蓝色链接文字
             elif "🔗" in text:
@@ -304,12 +324,20 @@ def publish_article(md_path: str, mode: str = "ai") -> dict:
             repo_display = "全频道"
 
         # 包装为完整 HTML（微信文章标准样式）
+        # 头部引导卡片
+        today_cn = datetime.now().strftime("%Y年%m月%d日")
+        total_items = md_content.count("### ")  # 粗略统计条目数
+        header_card = f"""
+<section style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;padding:24px 20px;margin:0 0 20px;text-align:center;">
+  <div style="font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:3px;margin-bottom:8px;">{repo_display.upper()}</div>
+  <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:1px;margin-bottom:6px;">{today_cn}</div>
+  <div style="font-size:14px;color:rgba(255,255,255,0.6);">今日 {total_items} 条精选 · 一张图速览 AI 动态</div>
+</section>"""
+
         full_html = f"""
 <section style="max-width:640px;margin:0 auto;padding:10px 16px 20px;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;">
 
-<div style="text-align:center;padding:20px 0 8px;">
-  <span style="display:inline-block;background:#0071e3;color:#fff;font-size:12px;padding:3px 12px;border-radius:12px;letter-spacing:2px;">{repo_display}</span>
-</div>
+{header_card}
 
 {html_content}
 
@@ -317,13 +345,12 @@ def publish_article(md_path: str, mode: str = "ai") -> dict:
 
 <section style="background:#f8f9fa;border-radius:8px;padding:14px 16px;margin:16px 0;">
   <p style="margin:0 0 6px;font-size:13px;color:#666;line-height:1.6;">
-    📬 本文由 AI 自动整理 · 每日 8:00 更新<br>
-    💡 点击下方「阅读原文」查看带跳转链接的网页版
+    📡 今日 AI 资讯速递 · 每日 8:00 更新<br>
+    💡 点击下方「阅读原文」查看网页版（支持原文跳转）
   </p>
 </section>
 
-</section>
-"""
+</section>"""
 
         # 获取 access_token
         print("  [publisher] 获取 access_token...")

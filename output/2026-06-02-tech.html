@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科技综合日报 · 2026-06-02</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f5f7; color: #1d1d1f; line-height: 1.5;
+    max-width: 740px; margin: 0 auto;
+  }
+
+  /* header */
+  .hdr {
+    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+    color:#fff; padding: 36px 24px 28px; text-align:center;
+  }
+  .hdr h1 { font-size:1.6em; font-weight:800; letter-spacing:2px; }
+  .hdr .sub { font-size:0.85em; color:rgba(255,255,255,0.6); margin-top:6px; }
+
+  .wrap { padding: 16px 14px; }
+
+  /* 概览 */
+  .ov {
+    background:#fff; border-radius:10px; padding:14px 16px; margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .ov h3 { font-size:0.8em; color:#86868b; font-weight:600; margin-bottom:8px; letter-spacing:1px; }
+  .ov li { font-size:0.82em; color:#47474a; padding:3px 0; list-style:none; }
+  .ov li strong { color:#1d1d1f; }
+
+  /* hero */
+  .hero {
+    border-radius:14px; overflow:hidden; margin-bottom:14px;
+    min-height:200px; display:flex; align-items:flex-end; color:#fff;
+  }
+  .hero-mask {
+    width:100%; padding:22px 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 55%, transparent 100%);
+  }
+  .hero-t { font-size:1.15em; font-weight:700; margin-bottom:6px; line-height:1.35; }
+  .hero-s { font-size:0.82em; color:rgba(255,255,255,0.8); margin-bottom:10px; }
+  .hero-b { display:flex; align-items:center; gap:6px; }
+
+  /* tile grid */
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .tile {
+    background:#fff; border-radius:10px; padding:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .tile:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .tile-t { font-size:0.88em; font-weight:700; color:#1d1d1f; margin-bottom:4px; line-height:1.4; }
+  .tile-s { font-size:0.76em; color:#86868b; line-height:1.5; margin-bottom:8px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .tile-b { display:flex; align-items:center; gap:6px; }
+
+  /* rows */
+  .row {
+    background:#fff; border-radius:8px; padding:10px 14px; margin-bottom:6px;
+    display:flex; align-items:center; gap:8px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+    transition: background 0.15s;
+  }
+  .row:hover { background:#f0f0f2; }
+  .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .row-t { font-size:0.82em; font-weight:600; color:#1d1d1f; flex-shrink:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }
+  .row-s { font-size:0.75em; color:#86868b; flex:1; min-width:0;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* buttons */
+  .btns { display:flex; gap:4px; flex-shrink:0; margin-left:auto; }
+  .btn-s {
+    background:#f5f5f7; color:#1d1d1f; border:none; padding:2px 8px;
+    border-radius:4px; font-size:0.68em; cursor:pointer; font-weight:600;
+  }
+  .btn-s:hover { background:#e8e8ed; }
+  .btn-s.active { background:#0071e3; color:#fff; }
+  .btn-r {
+    display:inline-block; padding:2px 8px; border-radius:4px;
+    font-size:0.68em; text-decoration:none; background:#0071e3; color:#fff; font-weight:600;
+  }
+  .btn-r:hover { background:#0077ed; }
+  .src { font-size:0.68em; color:#aeaeb2; margin-left:4px; }
+  .hero .btn-s { background:rgba(255,255,255,0.15); color:#fff; }
+  .hero .btn-s:hover { background:rgba(255,255,255,0.25); }
+  .hero .btn-s.active { background:#fff; color:#1d1d1f; }
+  .hero .btn-r { background:rgba(255,255,255,0.2); color:#fff; }
+  .hero .btn-r:hover { background:rgba(255,255,255,0.35); }
+  .hero .src { color:rgba(255,255,255,0.4); }
+
+  .ft { text-align:center; color:#aeaeb2; font-size:0.72em; padding:20px 14px 28px; }
+
+  /* 视频板块 */
+  .vsection { margin-top:14px; }
+  .vsection-title {
+    font-size:0.95em; font-weight:700; color:#9333ea; margin-bottom:10px;
+    padding-left:2px; letter-spacing:0.5px;
+  }
+  .vgrid { display:flex; flex-direction:column; gap:10px; }
+  .vcard {
+    display:flex; gap:12px; background:#fff; border-radius:10px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .vcard:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .vcard-img {
+    width:140px; min-height:80px; flex-shrink:0; background-size:cover; background-position:center;
+    background-color:#e5e7eb; position:relative; display:block; text-decoration:none;
+  }
+  .vcard-dur {
+    position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff;
+    font-size:0.65em; padding:1px 5px; border-radius:3px; font-weight:600;
+  }
+  .vcard-info { flex:1; padding:10px 12px 10px 0; min-width:0; display:flex; flex-direction:column; justify-content:center; }
+  .vcard-t {
+    font-size:0.85em; font-weight:700; color:#1d1d1f; line-height:1.4; margin-bottom:4px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .vcard-meta { font-size:0.72em; color:#86868b; }
+</style>
+</head>
+<body>
+  <div class="hdr">
+    <h1>科技综合日报</h1>
+    <div class="sub">2026-06-02 · 8 条精选</div>
+  </div>
+  <div class="wrap">
+  <div class="ov">
+    <h3>今日概览</h3>
+    <ul>
+      <li><strong>AI/大模型</strong>：做了18年民宿的爱彼迎，开始卖酒店了？</li>
+      <li><strong>产品/创业</strong>：深创投押注全球植纤皮革头部品牌，超级皮儿PEELSPHERE®完成近亿级融资｜36氪首发、36氪首发｜原小天才团队做老年硬件，切入居家看护赛道，即将进入海外市场、前美团外卖技术负责人创业，做具身智能时代的“餐饮世界模型” 等4条</li>
+      <li><strong>视频</strong>：【米泽茜】Nyamuchi生日直播_2026/6/1（大模型字幕）、观看：英伟达首席执行官黄仁勋在台北国际电脑展上与韩国高管会谈期间接受媒体采访 | AI14、【2026全新】AI Agent+MCP保姆级教程！从0到1搭建商业级编程智能体，手把手落地商用项目，吃透智能体开发，实现薪资进阶！</li>
+    </ul>
+  </div>
+  
+    <div class="hero" data-original-lang="zh" style="background:linear-gradient(135deg, #374151 0%, #1f2937 100%)">
+      <div class="hero-mask">
+        <div class="hero-t">做了18年民宿的爱彼迎，开始卖酒店了？</div>
+        <div class="hero-s">爱彼迎的”进化“ 五月的旧金山，正在经历一场技术的集体癫狂。硅谷的各路AI新贵忙着为机器进化摇旗呐喊，把发布会开成一场场技术狂欢，仿佛人类的下一步就是被算法接管一切。 同样的城市里，Brian Chesky——爱彼迎联合创始人兼首席执行官，...</div>
+        <div class="hero-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://36kr.com/p/3835511712363657?f=rss" class="btn-r" target="_blank">原文</a></span><span class="src">36kr.com</span></div>
+      </div>
+    </div>
+  <div class="tiles">
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #374151">
+      <div class="tile-t">深创投押注全球植纤皮革头部品牌，超级皮儿PEELSPHERE®完成近亿级融资｜36氪首发</div>
+      <div class="tile-s">36氪获悉，植物纤维皮革面料公司深圳朴飞生物（以下简称超级皮儿PEELSPHERE®）已完成新一轮融资，由头部创投机构——深圳市创新投资集团有限公司（深创投）独家战略投资。此轮资金将主要用于新产品研发与团队扩充。 超级皮儿PEELSPHER...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://36kr.com/p/3800191597583621?f=rss" class="btn-r" target="_blank">原文</a></span><span class="src">36kr.com</span></div>
+    </div>
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #374151">
+      <div class="tile-t">36氪首发｜原小天才团队做老年硬件，切入居家看护赛道，即将进入海外市场</div>
+      <div class="tile-s">作者 | 乔钰杰 编辑 | 袁斯来 硬氪获悉，近日，居家养老消费电子品牌「元生智能」完成新一轮超千万元Pre-A轮融资。本轮融资由银创资本领投，东科创跟投。本轮资金将主要用于渠道拓展以及相关新产品的持续迭代。 元生智能是硬氪长期关注的企业，...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://36kr.com/p/3835387558065541?f=rss" class="btn-r" target="_blank">原文</a></span><span class="src">36kr.com</span></div>
+    </div>
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #374151">
+      <div class="tile-t">前美团外卖技术负责人创业，做具身智能时代的“餐饮世界模型”</div>
+      <div class="tile-s">具身智能的落地，正在从实验室走向最真实、最繁忙的物理世界。 而元节智能（AtomBite.AI）选择了一个看起来并不性感、但足够真实的场景：餐饮后厨。 36氪获悉，具身智能公司元节智能近日完成千万级种子轮融资，由英诺科创基金领投，水木清华校...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://36kr.com/p/3834292242130825?f=rss" class="btn-r" target="_blank">原文</a></span><span class="src">36kr.com</span></div>
+    </div>
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #374151">
+      <div class="tile-t">首轮融资数千万美元、估值2.5亿美元，「Aippy」正在打造下一代AI游戏社区 | 36氪首发</div>
+      <div class="tile-s">36氪获悉，NADA AI团队开发的AI游戏社区「Aippy」，已于近日完成数千万美元首轮融资，本轮由歌未资本（Glowill Capital）投资，投后估值2.5亿美元。本轮资金将主要用于顶尖人才引进和欧美核心市场用户规模化增长。 Aip...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://36kr.com/p/3834400181741440?f=rss" class="btn-r" target="_blank">原文</a></span><span class="src">36kr.com</span></div>
+    </div>
+  </div>
+  <div class="vsection">
+    <div class="vsection-title">🎬 视频精选</div>
+    <div class="vgrid">
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116674531428093" target="_blank" class="vcard-img" style="background-image:url('https://i1.hdslb.com/bfs/archive/40ed18cabc84ce58664a6c4ef3018b81e37baf09.jpg')">
+        <span class="vcard-dur">179:15</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">【米泽茜】Nyamuchi生日直播_2026/6/1（大模型字幕）</div>
+        <div class="vcard-meta">UP主：木の葉景天　｜　5392 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116677953983957" target="_blank" class="vcard-img" style="background-image:url('https://i2.hdslb.com/bfs/archive/cc408b83dd0bc1a0dad1bbcd530fe711b804055b.jpg')">
+        <span class="vcard-dur">10:16</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">观看：英伟达首席执行官黄仁勋在台北国际电脑展上与韩国高管会谈期间接受媒体采访 | AI14</div>
+        <div class="vcard-meta">UP主：Web3天空之城　｜　1025 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116679262668555" target="_blank" class="vcard-img" style="background-image:url('https://i0.hdslb.com/bfs/archive/91852673bc26f9b6bec9a200bad987c5ad611903.jpg')">
+        <span class="vcard-dur">785:9</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">【2026全新】AI Agent+MCP保姆级教程！从0到1搭建商业级编程智能体，手把手落地商用项目，吃透智能体开发，实现薪资进阶！</div>
+        <div class="vcard-meta">UP主：阿杜讲大模型　｜　919 播放</div>
+      </div>
+    </div>
+    </div>
+  </div>
+  </div>
+  <div class="ft">本文由 AI 自动整理 · 内容仅供参考</div>
+
+  <script>
+  async function toggleLang(btn) {
+    var card = btn.closest('[data-original-lang]');
+    var content = card.querySelector('.hero-s, .tile-s, .row-s');
+    if (!content) content = card;
+    var originalLang = card.dataset.originalLang;
+
+    if (card.dataset.translated) {
+      if (card.dataset.showing === 'translated') {
+        content.textContent = card.dataset.originalText;
+        card.dataset.showing = 'original';
+        btn.textContent = originalLang === 'zh' ? 'EN' : '中文';
+        btn.classList.remove('active');
+      } else {
+        content.textContent = card.dataset.translated;
+        card.dataset.showing = 'translated';
+        btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+        btn.classList.add('active');
+      }
+      return;
+    }
+
+    var text = content.textContent;
+    card.dataset.originalText = text;
+    card.dataset.showing = 'original';
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    var targetLang = originalLang === 'zh' ? 'en' : 'zh-CN';
+    var sourceLang = originalLang === 'zh' ? 'zh-CN' : 'en';
+
+    try {
+      var url = 'https://api.mymemory.translated.net/get?q=' +
+                encodeURIComponent(text.substring(0, 500)) +
+                '&langpair=' + sourceLang + '|' + targetLang;
+      var resp = await fetch(url);
+      var data = await resp.json();
+      var translated = data.responseData.translatedText;
+      card.dataset.translated = translated;
+      content.textContent = translated;
+      card.dataset.showing = 'translated';
+      btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+      btn.classList.add('active');
+    } catch(e) {
+      btn.textContent = '失败';
+      setTimeout(function() { btn.textContent = originalLang === 'zh' ? 'EN' : '中文'; }, 2000);
+    }
+    btn.disabled = false;
+  }
+  </script>
+</body>
+</html>
