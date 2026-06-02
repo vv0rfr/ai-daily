@@ -40,7 +40,7 @@ def md_to_html(md_content: str) -> str:
     lines = md_content.split("\n")
     html_parts = []
     in_list = False
-    links = []  # 收集原文链接
+    links = []
 
     for line in lines:
         raw = line
@@ -51,11 +51,24 @@ def md_to_html(md_content: str) -> str:
             if in_list:
                 html_parts.append("</ul>")
                 in_list = False
-            html_parts.append('<p style="margin:12px 0;"><br/></p>')
+            html_parts.append('<p style="margin:10px 0;"><br/></p>')
             continue
 
+        # 分类标题 ###（文章条目标题）
+        if line.startswith("### "):
+            if in_list:
+                html_parts.append("</ul>")
+                in_list = False
+            text = line[4:]
+            text = _parse_inline(text)
+            html_parts.append(
+                f'<section style="margin:18px 0 6px;padding:10px 14px;'
+                f'background:#f5f7fa;border-radius:8px;border-left:3px solid #666;">'
+                f'<span style="font-size:16px;font-weight:bold;color:#1a1a1a;line-height:1.5;">'
+                f'{text}</span></section>'
+            )
         # 分类标题 ##
-        if line.startswith("## "):
+        elif line.startswith("## "):
             if in_list:
                 html_parts.append("</ul>")
                 in_list = False
@@ -81,6 +94,19 @@ def md_to_html(md_content: str) -> str:
             html_parts.append(
                 f'<h1 style="font-size:20px;font-weight:bold;color:#1a1a1a;'
                 f'text-align:center;margin:8px 0 4px;letter-spacing:1px;">{text}</h1>'
+            )
+        # 粗体行如 **📋 今日看点** → 特殊样式
+        elif line.startswith("**") and "**" in line[2:]:
+            if in_list:
+                html_parts.append("</ul>")
+                in_list = False
+            text = line.strip("*")
+            text = _parse_inline(text)
+            html_parts.append(
+                f'<section style="margin:18px 0 12px;padding:12px 16px;'
+                f'background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:8px;">'
+                f'<span style="font-size:15px;font-weight:bold;color:#fff;">{text}</span>'
+                f'</section>'
             )
         # 引用（区分来源、链接和普通引用）
         elif line.startswith("> "):
@@ -269,7 +295,7 @@ def publish_article(md_path: str, mode: str = "ai") -> dict:
 
         # GitHub HTML 页面作为"阅读原文"链接
         repo_url = "https://vv0rfr.github.io/ai-daily"
-        source_url = f"{repo_url}/output/{today}-{mode}.html"
+        source_url = f"{repo_url}/{today}-{mode}.html"
         if mode == "ai":
             repo_display = "AI 频道"
         elif mode == "tech":
