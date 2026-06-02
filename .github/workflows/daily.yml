@@ -73,17 +73,10 @@ jobs:
           TODAY=$(date +%Y-%m-%d)
           curl -s "https://sctapi.ftqq.com/${SERVERCHAN_KEY}.send" \
             -d "title=AI日报已生成 (${TODAY})" \
-            -d "desp=模式: ${MODE}\n文件数: ${FILES}\n\n[查看日报](https://github.com/${{ github.repository }}/tree/main/output)" || true
+            -d "desp=模式: ${MODE}\n文件数: ${FILES}\n\n[查看日报](https://github.com/${{ github.repository }}/tree/main/output)\n\n💡 本地执行以下命令提交到公众号草稿箱：\n python main.py ${MODE} --publish" || true
 
-      - name: Publish to WeChat
-        if: env.WECHAT_APP_ID != ''
-        env:
-          WECHAT_APP_ID: ${{ secrets.WECHAT_APP_ID }}
-          WECHAT_APP_SECRET: ${{ secrets.WECHAT_APP_SECRET }}
-        run: python -c "
-          from publisher import publish_latest
-          publish_latest()
-          " || echo "WeChat publish failed, continuing..."
+      # ⚠️ 公众号发布（需本地IP在白名单内，不在Actions中执行）
+      # 本地运行: python main.py ai --publish 或 python main.py all --publish
 
   # ========== 部署到 GitHub Pages ==========
   deploy-pages:
