@@ -1,10 +1,10 @@
-"""调用 Claude API 生成公众号文章 + 内嵌阅读 HTML 页面"""
+"""调用 AI API 生成公众号文章 + 内嵌阅读 HTML 页面"""
 
 import os
 import html
 import urllib.parse
 from datetime import datetime
-from config import ANTHROPIC_API_KEY, OUTPUT_DIR
+from config import ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, DEEPSEEK_API_URL, OUTPUT_DIR
 
 
 SYSTEM_PROMPT = """你是一位资深 AI 科技媒体编辑，负责将每日 AI 动态整理成公众号文章。
@@ -37,9 +37,9 @@ def generate_overview(groups: dict) -> str:
 
 
 def generate_article(groups: dict) -> str:
-    """用 Claude API 生成公众号文章"""
-    if not ANTHROPIC_API_KEY:
-        print("  [writer] 未配置 ANTHROPIC_API_KEY，使用模板生成")
+    """用 AI API（DeepSeek/Claude）生成公众号文章"""
+    if not DEEPSEEK_API_KEY and not ANTHROPIC_API_KEY:
+        print("  [writer] 未配置 API Key（DeepSeek 或 Claude），使用模板生成")
         return generate_from_template(groups)
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -58,27 +58,62 @@ def generate_article(groups: dict) -> str:
 
     user_prompt = "\n".join(content_lines)
 
-    try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=4096,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-        article = message.content[0].text
-        article = article.split("\n", 1)
-        if len(article) > 1:
-            article = article[0] + "\n\n" + overview + "\n\n" + article[1]
-        else:
-            article = article[0] + "\n\n" + overview
-        print(f"  [writer] Claude API 生成完成，{len(article)} 字符")
-        return article
-    except Exception as e:
-        print(f"  [writer] Claude API 调用失败：{e}")
-        print("  [writer] 回退到模板生成")
-        return generate_from_template(groups)
+    # 优先使用 DeepSeek（OpenAI 兼容格式）
+    if DEEPSEEK_API_KEY:
+        try:
+            from openai import OpenAI
+            client = OpenAI(
+                api_key=DEEPSEEK_API_KEY,
+                base_url=DEEPSEEK_API_URL,
+            )
+            message = client.chat.completions.create(
+                model="deepseek-chat",
+                max_tokens=4096,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ],
+            )
+            article = message.choices[0].message.content
+            article = article.split("\n", 1)
+            if len(article) > 1:
+                article = article[0] + "\n\n" + overview + "\n\n" + article[1]
+            else:
+                article = article[0] + "\n\n" + overview
+            print(f"  [writer] DeepSeek API 生成完成，{len(article)} 字符")
+            return article
+        except Exception as e:
+            print(f"  [writer] DeepSeek API 调用失败：{e}")
+            if not ANTHROPIC_API_KEY:
+                print("  [writer] 无备用 API Key，回退到模板生成")
+                return generate_from_template(groups)
+            print("  [writer] 尝试备用 Claude API...")
+
+    # 备用：Claude API
+    if ANTHROPIC_API_KEY:
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+            message = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=4096,
+                system=SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": user_prompt}],
+            )
+            article = message.content[0].text
+            article = article.split("\n", 1)
+            if len(article) > 1:
+                article = article[0] + "\n\n" + overview + "\n\n" + article[1]
+            else:
+                article = article[0] + "\n\n" + overview
+            print(f"  [writer] Claude API 生成完成，{len(article)} 字符")
+            return article
+        except Exception as e:
+            print(f"  [writer] Claude API 调用失败：{e}")
+            print("  [writer] 回退到模板生成")
+            return generate_from_template(groups)
+
+    return generate_from_template(groups)
 
 
 def generate_from_template(groups: dict) -> str:

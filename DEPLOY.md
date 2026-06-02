@@ -27,6 +27,37 @@
 
 ---
 
+## 公众号配置
+
+### 前置条件
+
+- 已注册的微信公众号（个人订阅号即可）
+- 已绑定管理员微信号
+
+### 获取凭证
+
+1. 登录 [微信开发者平台](https://developers.weixin.qq.com/platform)
+2. 进入 **我的业务** → 点击你的公众号
+3. 在 **基础信息** 或 **开发密钥** 区域：
+   - 复制 **AppID**
+   - 点击 **重置** 获取 **AppSecret**（仅显示一次，立即保存）
+
+### 配置 IP 白名单
+
+1. 在 **微信开发者平台** → 公众号详情页 → **IP 白名单**
+2. 添加你的本地 IP（运行脚本的机器）
+3. 如用 GitHub Actions，需添加 GitHub Actions 的出口 IP 范围
+
+### 注意事项
+
+- 个人订阅号 **无自动发布权限**（`freepublish/submit` 返回 48001）
+- 草稿会自动提交到 **草稿箱**，需手动登录公众号后台发布
+- `thumb_media_id` 参数实际为必填，即使文档标注非必填
+- 订阅号每天只能群发 1 次
+- JSON 序列化需用 `ensure_ascii=False`，否则中文显示为乱码
+
+---
+
 ## 本地自动化
 
 ### Windows 任务计划程序
@@ -36,7 +67,7 @@
 3. 设置触发器：每天 8:00
 4. 操作：启动程序
    - 程序：`python`
-   - 参数：`main.py ai`
+   - 参数：`main.py ai --publish`
    - 起始于：`C:\Users\Lenovo\Desktop\ai-daily`
 
 ### Linux/Mac Crontab
@@ -46,8 +77,17 @@
 crontab -e
 
 # 添加（每天北京时间 8:00 运行，UTC+8）
-0 0 * * * cd /path/to/ai-daily && python main.py ai
+0 0 * * * cd /path/to/ai-daily && python main.py ai --publish
 ```
+
+---
+
+## GitHub Pages（用于"阅读原文"跳转）
+
+1. 进入仓库 Settings → Pages
+2. Source: **Deploy from a branch**
+3. Branch: `main` → `/ (root)`
+4. URL: `https://vv0rfr.github.io/ai-daily/output/{日期}-{模式}.html`
 
 ---
 
@@ -62,42 +102,22 @@ crontab -e
 
 ---
 
-## 公众号配置（可选）
-
-### 前置条件
-
-- 认证的微信公众号（订阅号或服务号）
-- 已绑定管理员微信号
-
-### 获取凭证
-
-1. 登录微信公众平台
-2. 开发 → 基本配置
-3. 复制 AppID 和 AppSecret
-4. 配置 IP 白名单（需要 GitHub Actions 的出口 IP）
-
-### 注意事项
-
-- 订阅号每天只能群发 1 次
-- 服务号每月 4 次
-- 文章需要人工审核后才会发布
-
----
-
 ## 常见问题
 
 ### Q: RSS 源抓取失败？
-
 A: 部分源可能需要翻墙或有频率限制，系统会自动跳过失败的源。
 
 ### Q: 如何添加新的 RSS 源？
-
 A: 编辑 `config.py`，在 `AI_FEEDS` 或 `TECH_FEEDS` 字典中添加。
 
 ### Q: 如何修改定时时间？
-
 A: 编辑 `.github/workflows/daily.yml` 中的 cron 表达式。当前是 UTC 00:00（北京时间 8:00）。
 
 ### Q: 如何只生成不发布？
-
 A: 不配置公众号 Secrets 即可，系统会跳过发布步骤。
+
+### Q: 公众号草稿创建失败 40007？
+A: 需要上传封面图获取 `thumb_media_id`，代码已默认生成 `templates/thumb.jpg`。
+
+### Q: 发布到微信显示中文乱码？
+A: JSON 序列化需使用 `ensure_ascii=False`，代码已修复。

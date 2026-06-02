@@ -48,17 +48,20 @@ python main.py ai --no-notify  # 不发送通知
 
 ### 公众号自动发布
 
-需要认证的微信公众号：
-1. 在公众号后台获取 AppID 和 AppSecret
-2. 配置 IP 白名单（GitHub Actions 的 IP）
-3. 添加到 GitHub Secrets
+需要配置微信公众号（个人订阅号即可）：
+1. 在 [微信开发者平台](https://developers.weixin.qq.com/platform) 获取 AppID 和 AppSecret
+2. 配置 IP 白名单（你的运行环境 IP）
+3. 添加到 GitHub Secrets 或本地 `.env`
+4. 运行 `python main.py ai --publish` 提交到草稿箱
 
-详细配置请查看 [DEPLOY.md](DEPLOY.md)
+> ⚠️ 个人订阅号无自动群发权限，草稿提交后需手动从公众号后台发布
+> 详细配置请查看 [DEPLOY.md](DEPLOY.md)
 
 ## 数据源
 
 **AI 频道：**
 - AI HOT 精选 / 日报
+- Hugging Face 博客
 - Simon Willison 博客
 - The Decoder
 

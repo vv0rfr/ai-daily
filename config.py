@@ -3,8 +3,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Claude API
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+# AI API（支持 DeepSeek 或 Claude）
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")  # Claude API（备用）
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")    # DeepSeek API（优先使用）
+DEEPSEEK_API_URL = "https://api.deepseek.com"
 
 # === AI 垂直频道数据源 ===
 AI_FEEDS = {
