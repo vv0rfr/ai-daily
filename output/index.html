@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 日报归档</title>
+<style>
+  :root {
+    --bg-page: #f5f5f7;
+    --bg-card: #fff;
+    --bg-card-hover: #fafafa;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --text-tertiary: #aeaeb2;
+    --bdr-card: #e5e5e7;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
+    --accent: #2563EB;
+  }
+  .dark-mode {
+    --bg-page: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #64748b;
+    --bdr-card: #334155;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.5);
+    --accent: #60a5fa;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .header {
+    margin-bottom: 36px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .header p {
+    color: var(--text-secondary);
+    font-size: 15px;
+    margin-top: 6px;
+  }
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--bdr-card);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow);
+    transition: all 0.15s;
+  }
+  .theme-toggle:hover {
+    box-shadow: var(--shadow-hover);
+    color: var(--text-primary);
+  }
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card {
+    display: block;
+    background: var(--bg-card);
+    border: 1px solid var(--bdr-card);
+    border-radius: 12px;
+    padding: 18px 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.15s;
+    box-shadow: var(--shadow);
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .date {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+  .mode-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tag-color, #6B7280);
+    background: color-mix(in srgb, var(--tag-color, #6B7280) 12%, transparent);
+    padding: 2px 10px;
+    border-radius: 100px;
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .footer {
+    margin-top: 48px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">🌓 切换主题</button>
+  <div class="header">
+    <h1>📡 AI 日报归档</h1>
+    <p>每日 AI 资讯精选 · 共 8 期</p>
+  </div>
+  <div class="cards">
+    <a href="2026-06-03-ai.html" class="card" data-date="2026-06-03">
+      <div class="card-top">
+        <span class="date">2026-06-03 周三</span>
+        <span class="mode-tag" style="--tag-color: #2563EB">AI</span>
+      </div>
+      <div class="card-title">2026年06月03日 · AI日报</div>
+    </a>
+    <a href="2026-06-02-ai.html" class="card" data-date="2026-06-02">
+      <div class="card-top">
+        <span class="date">2026-06-02 周二</span>
+        <span class="mode-tag" style="--tag-color: #2563EB">AI</span>
+      </div>
+      <div class="card-title">2026年06月02日 · AI日报</div>
+    </a>
+    <a href="2026-06-02-all.html" class="card" data-date="2026-06-02">
+      <div class="card-top">
+        <span class="date">2026-06-02 周二</span>
+        <span class="mode-tag" style="--tag-color: #D4763A">综合</span>
+      </div>
+      <div class="card-title">2026年06月02日 · 综合日报</div>
+    </a>
+    <a href="2026-06-02-tech.html" class="card" data-date="2026-06-02">
+      <div class="card-top">
+        <span class="date">2026-06-02 周二</span>
+        <span class="mode-tag" style="--tag-color: #0D9488">科技</span>
+      </div>
+      <div class="card-title">2026年06月02日 · 科技日报</div>
+    </a>
+    <a href="2026-06-01-ai.html" class="card" data-date="2026-06-01">
+      <div class="card-top">
+        <span class="date">2026-06-01 周一</span>
+        <span class="mode-tag" style="--tag-color: #2563EB">AI</span>
+      </div>
+      <div class="card-title">2026年06月01日 · AI日报</div>
+    </a>
+    <a href="2026-05-31-ai.html" class="card" data-date="2026-05-31">
+      <div class="card-top">
+        <span class="date">2026-05-31 周日</span>
+        <span class="mode-tag" style="--tag-color: #2563EB">AI</span>
+      </div>
+      <div class="card-title">2026年05月31日 · AI日报</div>
+    </a>
+    <a href="2026-05-30-ai.html" class="card" data-date="2026-05-30">
+      <div class="card-top">
+        <span class="date">2026-05-30 周六</span>
+        <span class="mode-tag" style="--tag-color: #2563EB">AI</span>
+      </div>
+      <div class="card-title">2026年05月30日 · AI日报</div>
+    </a>
+    <a href="2026-05-29-ai.html" class="card" data-date="2026-05-29">
+      <div class="card-top">
+        <span class="date">2026-05-29 周五</span>
+        <span class="mode-tag" style="--tag-color: #2563EB">AI</span>
+      </div>
+      <div class="card-title">2026年05月29日 · AI日报</div>
+    </a>
+  </div>
+  <div class="footer">
+    由 <a href="https://github.com/vv0rfr/ai-daily">AI 日报生成器</a> 自动生成
+  </div>
+  <script>
+  const stored = localStorage.getItem('theme');
+  if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.body.classList.add('dark-mode');
+  }
+  function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+  }
+  </script>
+</body>
+</html>
