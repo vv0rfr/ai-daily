@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<title>AI 垂直日报 · 2026-06-08</title>
+	<style>
+	  :root {
+	    --bg-page: #f5f5f7;
+	    --bg-card: #fff;
+	    --text-primary: #1d1d1f;
+	    --text-secondary: #86868b;
+	    --text-tertiary: #aeaeb2;
+	    --text-ov: #47474a;
+	    --shadow: 0 1px 3px rgba(0,0,0,0.04);
+	    --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+	  }
+	  .dark-mode {
+	    --bg-page: #1a1a2e;
+	    --bg-card: #1e293b;
+	    --text-primary: #e2e8f0;
+	    --text-secondary: #94a3b8;
+	    --text-tertiary: #64748b;
+	    --text-ov: #94a3b8;
+	    --shadow: 0 1px 3px rgba(0,0,0,0.2);
+	    --shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
+	  }
+	  * { margin:0; padding:0; box-sizing:border-box; }
+	  body {
+	    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+	    background: var(--bg-page); color: var(--text-primary); line-height: 1.6;
+	    max-width: 740px; margin: 0 auto;
+	    transition: background 0.2s, color 0.2s;
+	  }
+
+	  /* dark mode toggle */
+	  .theme-toggle {
+	    position:fixed; top:12px; right:12px; z-index:999;
+	    width:36px; height:36px; border-radius:50%; border:none;
+	    background:rgba(255,255,255,0.15); color:#fff; font-size:16px;
+	    cursor:pointer; backdrop-filter:blur(4px);
+	    transition:background 0.2s;
+	  }
+	  .theme-toggle:hover { background:rgba(255,255,255,0.3); }
+
+	  /* header */
+	  .hdr {
+	    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+	    color:#fff; padding: 36px 24px 28px; text-align:center;
+	  }
+	  .hdr h1 { font-size:clamp(1.2em,4vw,1.6em); font-weight:800; letter-spacing:2px; }
+	  .hdr .sub { font-size:clamp(0.75em,2.5vw,0.85em); color:rgba(255,255,255,0.6); margin-top:6px; }
+
+	  .wrap { padding: 16px 14px; }
+
+	  /* overview */
+	  .ov {
+	    background:var(--bg-card); border-radius:12px; padding:14px 16px; margin-bottom:16px;
+	    box-shadow:var(--shadow); transition:background 0.2s,box-shadow 0.2s;
+	  }
+	  .ov h3 { font-size:0.82em; color:var(--text-secondary); font-weight:600; margin-bottom:8px; letter-spacing:1px; }
+	  .ov li { font-size:0.85em; color:var(--text-ov); padding:3px 0; list-style:none; }
+	  .ov li strong { color:var(--text-primary); }
+
+	  /* hero */
+	  .hero {
+	    border-radius:14px; overflow:hidden; margin-bottom:14px;
+	    min-height:200px; display:flex; align-items:flex-end; color:#fff;
+	    transition: transform 0.2s;
+	  }
+	  .hero:hover { transform:scale(1.01); }
+	  .hero-mask {
+	    width:100%; padding:22px 20px;
+	    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 55%, transparent 100%);
+	  }
+	  .hero-t { font-size:clamp(1em,3.5vw,1.15em); font-weight:700; margin-bottom:6px; line-height:1.4; }
+	  .hero-s { font-size:clamp(0.78em,2.5vw,0.85em); color:rgba(255,255,255,0.8); margin-bottom:10px; }
+	  .hero-b { display:flex; align-items:center; gap:6px; }
+
+	  /* tile grid */
+	  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+	  .tile {
+	    background:var(--bg-card); border-radius:12px; padding:14px;
+	    box-shadow:var(--shadow); transition:transform 0.15s,box-shadow 0.2s,background 0.2s;
+	  }
+	  .tile:hover { transform:translateY(-2px); box-shadow:var(--shadow-hover); }
+	  .tile-t { font-size:clamp(0.82em,2.8vw,0.9em); font-weight:700; color:var(--text-primary); margin-bottom:4px; line-height:1.4; }
+	  .tile-s { font-size:clamp(0.74em,2.5vw,0.8em); color:var(--text-secondary); line-height:1.5; margin-bottom:8px;
+	    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+	  .tile-b { display:flex; align-items:center; gap:6px; }
+	  .tile-img {
+	    width:100%; height:140px; border-radius:8px; margin-bottom:10px;
+	    background-size:cover; background-position:center; background-color:var(--bg-page);
+	    transition: transform 0.2s;
+	  }
+	  .tile:hover .tile-img { transform:scale(1.02); }
+
+	  /* rows */
+	  .row {
+	    background:var(--bg-card); border-radius:10px; padding:10px 14px; margin-bottom:6px;
+	    display:flex; align-items:center; gap:8px;
+	    box-shadow:var(--shadow); transition:background 0.2s,box-shadow 0.2s;
+	  }
+	  .row:hover { background:color-mix(in srgb, var(--bg-card) 95%, #000); }
+	  .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+	  .row-t { font-size:clamp(0.78em,2.5vw,0.85em); font-weight:600; color:var(--text-primary); flex-shrink:0;
+	    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }
+	  .row-s { font-size:clamp(0.72em,2.3vw,0.78em); color:var(--text-secondary); flex:1; min-width:0;
+	    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+	  /* buttons */
+	  .btns { display:flex; gap:4px; flex-shrink:0; margin-left:auto; }
+	  .btn-s {
+	    background:var(--bg-page); color:var(--text-primary); border:none; padding:2px 8px;
+	    border-radius:4px; font-size:0.7em; cursor:pointer; font-weight:600;
+	  }
+	  .btn-s:hover { background:color-mix(in srgb, var(--bg-page) 90%, #000); }
+	  .btn-s.active { background:#0071e3; color:#fff; }
+	  .btn-r {
+	    display:inline-block; padding:2px 8px; border-radius:4px;
+	    font-size:0.7em; text-decoration:none; background:#0071e3; color:#fff; font-weight:600;
+	  }
+	  .btn-r:hover { background:#0077ed; }
+	  .src { font-size:0.7em; color:var(--text-tertiary); margin-left:4px; }
+	  .hero .btn-s { background:rgba(255,255,255,0.15); color:#fff; }
+	  .hero .btn-s:hover { background:rgba(255,255,255,0.25); }
+	  .hero .btn-s.active { background:#fff; color:#1d1d1f; }
+	  .hero .btn-r { background:rgba(255,255,255,0.2); color:#fff; }
+	  .hero .btn-r:hover { background:rgba(255,255,255,0.35); }
+	  .hero .src { color:rgba(255,255,255,0.4); }
+
+	  .ft { text-align:center; color:var(--text-tertiary); font-size:0.75em; padding:20px 14px 28px; }
+
+	  /* video section */
+	  .vsection { margin-top:14px; }
+	  .vsection-title {
+	    font-size:clamp(0.85em,3vw,1em); font-weight:700; color:#9333ea; margin-bottom:10px;
+	    padding-left:2px; letter-spacing:0.5px;
+	  }
+	  .vgrid { display:flex; flex-direction:column; gap:10px; }
+	  .vcard {
+	    display:flex; gap:12px; background:var(--bg-card); border-radius:12px; overflow:hidden;
+	    box-shadow:var(--shadow); transition:transform 0.15s,box-shadow 0.2s,background 0.2s;
+	  }
+	  .vcard:hover { transform:translateY(-2px); box-shadow:var(--shadow-hover); }
+	  .vcard-img {
+	    width:140px; min-height:80px; flex-shrink:0; background-size:cover; background-position:center;
+	    background-color:var(--bg-page); position:relative; display:block; text-decoration:none;
+	  }
+	  .vcard-dur {
+	    position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff;
+	    font-size:0.65em; padding:1px 5px; border-radius:3px; font-weight:600;
+	  }
+	  .vcard-info { flex:1; padding:10px 12px 10px 0; min-width:0; display:flex; flex-direction:column; justify-content:center; }
+	  .vcard-t {
+	    font-size:clamp(0.8em,2.8vw,0.88em); font-weight:700; color:var(--text-primary); line-height:1.4; margin-bottom:4px;
+	    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+	    transition:color 0.2s;
+	  }
+	  .vcard-meta { font-size:0.74em; color:var(--text-secondary); }
+
+	  /* mobile */
+	  @media (max-width:480px) {
+	    .hdr { padding:28px 16px 22px; }
+	    .wrap { padding:12px 10px; }
+	    .tiles { grid-template-columns:1fr; gap:8px; }
+	    .tile { padding:12px; }
+	    .tile-img { height:120px; }
+	    .hero { min-height:160px; border-radius:10px; }
+	    .hero-mask { padding:16px 14px; }
+	    .vcard-img { width:110px; min-height:70px; }
+	  }
+
+	  /* auto dark mode */
+	  @media (prefers-color-scheme: dark) {
+	    :root:not(.light-mode) {
+	      --bg-page: #1a1a2e;
+	      --bg-card: #1e293b;
+	      --text-primary: #e2e8f0;
+	      --text-secondary: #94a3b8;
+	      --text-tertiary: #64748b;
+	      --text-ov: #94a3b8;
+	      --shadow: 0 1px 3px rgba(0,0,0,0.2);
+	      --shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
+	    }
+	  }
+	</style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  <div class="hdr">
+    <h1>AI 垂直日报</h1>
+    <div class="sub">2026-06-08 · 7 条精选</div>
+  </div>
+  <div class="wrap">
+  <div class="ov">
+    <h3>今日概览</h3>
+    <ul>
+      <li><strong>模型</strong>：Her · हेर - Claude Code 会话分析工具、Deepseek topped Ramp's trending software vendors in June 2026 as US companies chase cheaper AI</li>
+      <li><strong>行业</strong>：datasette-agent-edit 0.1a0、Perplexity's "Search as Code" lets AI models write their own search pipelines instead of calling fixed APIs</li>
+      <li><strong>产品</strong>：OpenAI says "chat is dead" and plans to rebuild ChatGPT as a full-blown agent app</li>
+      <li><strong>视频</strong>：对阳萌的4小时访谈：消费电子死与生、第三类公司、AI变量、产品方法、打游戏的模式选择、Conductor CEO Charlie Holtz：我是怎么搭建 AI 代理团队和编码工作流的</li>
+    </ul>
+  </div>
+  
+    <div class="hero" data-original-lang="zh" style="background-image:url('https://images.unsplash.com/photo-1692607431225-5f4564c8f132?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5Njc0MTF8MHwxfHNlYXJjaHwxfHxIZXIlMjBDbGF1ZGUlMjBDb2RlJTIwJUU0JUJDJTlBJUU4JUFGJTlEJUU1JTg4JTg2JUU2JTlFJTkwJUU1JUI3JUE1JUU1JTg1JUI3JTIwQUklMjBhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwbW9kZWx8ZW58MXwwfHx8MTc4MDg4OTk1NXww&ixlib=rb-4.1.0&q=80&w=1080'), linear-gradient(135deg, #0d9488 0%, #0f766e 100%);background-size:cover;background-position:center;background-blend-mode:overlay;">
+      <div class="hero-mask">
+        <div class="hero-t">Her · हेर - Claude Code 会话分析工具</div>
+        <div class="hero-s">Her（हेर）是专为 Claude Code 设计的会话分析工具。用户上传 `.jsonl` 文件后，Her 用自然语言重建每轮交互，标记部署、配置变更、秘密等高风险操作并定位到具体轮次。它展示 token 消耗、所用工具、子智能体、技能...</div>
+        <div class="hero-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://huggingface.co/blog/build-small-hackathon/her-blog" class="btn-r" target="_blank">原文</a></span><span class="src">huggingface.co</span></div>
+      </div>
+    </div>
+  <div class="tiles">
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #0d9488">
+      <div class="tile-img" style="background-image:url('https://picsum.photos/seed/446565707365656b/740/400')"></div>
+      <div class="tile-t">Deepseek topped Ramp&#x27;s trending software vendors in June 2026 as US companies chase cheaper AI</div>
+      <div class="tile-s">Deepseek topped Ramp&#x27;s trending software vendors in June 2026 as a paid service that US companies send data to directly....</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/deepseek-topped-ramps-trending-software-vendors-in-june-2026-as-us-companies-chase-cheaper-ai/" class="btn-r" target="_blank">原文</a></span><span class="src">the-decoder.com</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #ea580c">
+      <div class="tile-img" style="background-image:url('https://picsum.photos/seed/6461746173657474/740/400')"></div>
+      <div class="tile-t">datasette-agent-edit 0.1a0</div>
+      <div class="tile-s">Release: datasette-agent-edit 0.1a0 I&#x27;m planning several plugins for Datasette Agent which can make edits to existing pi...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://simonwillison.net/2026/Jun/7/datasette-agent-edit/#atom-everything" class="btn-r" target="_blank">原文</a></span><span class="src">simonwillison.net</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #ea580c">
+      <div class="tile-img" style="background-image:url('https://picsum.photos/seed/506572706c657869/740/400')"></div>
+      <div class="tile-t">Perplexity&#x27;s &quot;Search as Code&quot; lets AI models write their own search pipelines instead of calling fixed APIs</div>
+      <div class="tile-s">Perplexity&#x27;s new &quot;Search as Code&quot; architecture dumps rigid search APIs and lets AI models write their own search routine...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/perplexitys-search-as-code-lets-ai-models-write-their-own-search-pipelines-instead-of-calling-fixed-apis/" class="btn-r" target="_blank">原文</a></span><span class="src">the-decoder.com</span></div>
+    </div>
+    <div class="tile" data-original-lang="en" style="border-top:3px solid #2563eb">
+      <div class="tile-img" style="background-image:url('https://images.unsplash.com/photo-1676299081847-824916de030a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5Njc0MTF8MHwxfHNlYXJjaHwxfHxPcGVuQUklMjBzYXlzJTIwY2hhdCUyMGlzJTIwZGVhZCUyMHRlY2hub2xvZ3klMjBwcm9kdWN0JTIwbGF1bmNofGVufDF8MHx8fDE3ODA4ODk5NTV8MA&ixlib=rb-4.1.0&q=80&w=1080')"></div>
+      <div class="tile-t">OpenAI says &quot;chat is dead&quot; and plans to rebuild ChatGPT as a full-blown agent app</div>
+      <div class="tile-s">OpenAI is planning the biggest overhaul of ChatGPT since its launch. The chatbot will become a &quot;superapp&quot; bundling codin...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">中文</button><a href="https://the-decoder.com/openai-says-chat-is-dead-and-plans-to-rebuild-chatgpt-as-a-full-blown-agent-app/" class="btn-r" target="_blank">原文</a></span><span class="src">the-decoder.com</span></div>
+    </div>
+  </div>
+  <div class="vsection">
+    <div class="vsection-title">🎬 视频精选</div>
+    <div class="vgrid">
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116709679696075" target="_blank" class="vcard-img" style="background-image:url('https://i1.hdslb.com/bfs/archive/4c4c44e957d98631302875ed92409c45d8e1abe1.jpg')">
+        <span class="vcard-dur">217:33</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">对阳萌的4小时访谈：消费电子死与生、第三类公司、AI变量、产品方法、打游戏的模式选择</div>
+        <div class="vcard-meta">UP主：张小珺商业访谈录　｜　4480 播放</div>
+      </div>
+    </div>
+    <div class="vcard" data-original-lang="zh">
+      <a href="http://www.bilibili.com/video/av116711323930547" target="_blank" class="vcard-img" style="background-image:url('https://i1.hdslb.com/bfs/archive/47a6e6295bad973007bd370800b33724dde28b9e.jpg')">
+        <span class="vcard-dur">15:22</span>
+      </a>
+      <div class="vcard-info">
+        <div class="vcard-t">Conductor CEO Charlie Holtz：我是怎么搭建 AI 代理团队和编码工作流的</div>
+        <div class="vcard-meta">UP主：逻辑商业局　｜　0 播放</div>
+      </div>
+    </div>
+    </div>
+  </div>
+  </div>
+  <div class="ft">本文由 AI 自动整理 · 内容仅供参考 · 配图：<a href="https://unsplash.com/photos/a-close-up-of-a-piece-of-luggage-with-text-on-it-LuzT78A1g7M" target="_blank" style="color:#aeaeb2;text-decoration:underline;">Google DeepMind</a>、<a href="https://unsplash.com/photos/a-cell-phone-sitting-on-top-of-a-laptop-computer-7q-kE4SZzvQ" target="_blank" style="color:#aeaeb2;text-decoration:underline;">Levart_Photographer</a>（Unsplash）</div>
+
+  <script>
+  async function toggleLang(btn) {
+    var card = btn.closest('[data-original-lang]');
+    var content = card.querySelector('.hero-s, .tile-s, .row-s');
+    if (!content) content = card;
+    var originalLang = card.dataset.originalLang;
+
+    if (card.dataset.translated) {
+      if (card.dataset.showing === 'translated') {
+        content.textContent = card.dataset.originalText;
+        card.dataset.showing = 'original';
+        btn.textContent = originalLang === 'zh' ? 'EN' : '中文';
+        btn.classList.remove('active');
+      } else {
+        content.textContent = card.dataset.translated;
+        card.dataset.showing = 'translated';
+        btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+        btn.classList.add('active');
+      }
+      return;
+    }
+
+    var text = content.textContent;
+    card.dataset.originalText = text;
+    card.dataset.showing = 'original';
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    var targetLang = originalLang === 'zh' ? 'en' : 'zh-CN';
+    var sourceLang = originalLang === 'zh' ? 'zh-CN' : 'en';
+
+    try {
+      var url = 'https://api.mymemory.translated.net/get?q=' +
+                encodeURIComponent(text.substring(0, 500)) +
+                '&langpair=' + sourceLang + '|' + targetLang;
+      var resp = await fetch(url);
+      var data = await resp.json();
+      var translated = data.responseData.translatedText;
+      card.dataset.translated = translated;
+      content.textContent = translated;
+      card.dataset.showing = 'translated';
+      btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+      btn.classList.add('active');
+    } catch(e) {
+      btn.textContent = '失败';
+      setTimeout(function() { btn.textContent = originalLang === 'zh' ? 'EN' : '中文'; }, 2000);
+    }
+    btn.disabled = false;
+  }
+
+  function toggleTheme() {
+    var body = document.body;
+    var btn = document.getElementById('themeBtn');
+    body.classList.toggle('dark-mode');
+    body.classList.remove('light-mode');
+    btn.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
+    try { localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light'); } catch(e) {}
+  }
+  try {
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('themeBtn').textContent = '☀️';
+    }
+  } catch(e) {}
+	
+  </script>
+</body>
+</html>
