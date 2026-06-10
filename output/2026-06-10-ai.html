@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<title>AI 垂直日报 · 2026-06-10</title>
+	<style>
+	  :root {
+	    --bg-page: #f5f5f7;
+	    --bg-card: #fff;
+	    --text-primary: #1d1d1f;
+	    --text-secondary: #86868b;
+	    --text-tertiary: #aeaeb2;
+	    --text-ov: #47474a;
+	    --shadow: 0 1px 3px rgba(0,0,0,0.04);
+	    --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+	  }
+	  .dark-mode {
+	    --bg-page: #1a1a2e;
+	    --bg-card: #1e293b;
+	    --text-primary: #e2e8f0;
+	    --text-secondary: #94a3b8;
+	    --text-tertiary: #64748b;
+	    --text-ov: #94a3b8;
+	    --shadow: 0 1px 3px rgba(0,0,0,0.2);
+	    --shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
+	  }
+	  * { margin:0; padding:0; box-sizing:border-box; }
+	  body {
+	    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+	    background: var(--bg-page); color: var(--text-primary); line-height: 1.6;
+	    max-width: 740px; margin: 0 auto;
+	    transition: background 0.2s, color 0.2s;
+	  }
+
+	  /* dark mode toggle */
+	  .theme-toggle {
+	    position:fixed; top:12px; right:12px; z-index:999;
+	    width:36px; height:36px; border-radius:50%; border:none;
+	    background:rgba(255,255,255,0.15); color:#fff; font-size:16px;
+	    cursor:pointer; backdrop-filter:blur(4px);
+	    transition:background 0.2s;
+	  }
+	  .theme-toggle:hover { background:rgba(255,255,255,0.3); }
+
+	  /* header */
+	  .hdr {
+	    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+	    color:#fff; padding: 36px 24px 28px; text-align:center;
+	  }
+	  .hdr h1 { font-size:clamp(1.2em,4vw,1.6em); font-weight:800; letter-spacing:2px; }
+	  .hdr .sub { font-size:clamp(0.75em,2.5vw,0.85em); color:rgba(255,255,255,0.6); margin-top:6px; }
+
+	  .wrap { padding: 16px 14px; }
+
+	  /* overview */
+	  .ov {
+	    background:var(--bg-card); border-radius:12px; padding:14px 16px; margin-bottom:16px;
+	    box-shadow:var(--shadow); transition:background 0.2s,box-shadow 0.2s;
+	  }
+	  .ov h3 { font-size:0.82em; color:var(--text-secondary); font-weight:600; margin-bottom:8px; letter-spacing:1px; }
+	  .ov li { font-size:0.85em; color:var(--text-ov); padding:3px 0; list-style:none; }
+	  .ov li strong { color:var(--text-primary); }
+
+	  /* hero */
+	  .hero {
+	    border-radius:14px; overflow:hidden; margin-bottom:14px;
+	    min-height:200px; display:flex; align-items:flex-end; color:#fff;
+	    transition: transform 0.2s;
+	  }
+	  .hero:hover { transform:scale(1.01); }
+	  .hero-mask {
+	    width:100%; padding:22px 20px;
+	    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 55%, transparent 100%);
+	  }
+	  .hero-t { font-size:clamp(1em,3.5vw,1.15em); font-weight:700; margin-bottom:6px; line-height:1.4; }
+	  .hero-s { font-size:clamp(0.78em,2.5vw,0.85em); color:rgba(255,255,255,0.8); margin-bottom:10px; }
+	  .hero-b { display:flex; align-items:center; gap:6px; }
+
+	  /* tile grid */
+	  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+	  .tile {
+	    background:var(--bg-card); border-radius:12px; padding:14px;
+	    box-shadow:var(--shadow); transition:transform 0.15s,box-shadow 0.2s,background 0.2s;
+	  }
+	  .tile:hover { transform:translateY(-2px); box-shadow:var(--shadow-hover); }
+	  .tile-t { font-size:clamp(0.82em,2.8vw,0.9em); font-weight:700; color:var(--text-primary); margin-bottom:4px; line-height:1.4; }
+	  .tile-s { font-size:clamp(0.74em,2.5vw,0.8em); color:var(--text-secondary); line-height:1.5; margin-bottom:8px;
+	    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+	  .tile-b { display:flex; align-items:center; gap:6px; }
+	  .tile-img {
+	    width:100%; height:140px; border-radius:8px; margin-bottom:10px;
+	    background-size:cover; background-position:center; background-color:var(--bg-page);
+	    transition: transform 0.2s;
+	  }
+	  .tile:hover .tile-img { transform:scale(1.02); }
+
+	  /* rows */
+	  .row {
+	    background:var(--bg-card); border-radius:10px; padding:10px 14px; margin-bottom:6px;
+	    display:flex; align-items:center; gap:8px;
+	    box-shadow:var(--shadow); transition:background 0.2s,box-shadow 0.2s;
+	  }
+	  .row:hover { background:color-mix(in srgb, var(--bg-card) 95%, #000); }
+	  .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+	  .row-t { font-size:clamp(0.78em,2.5vw,0.85em); font-weight:600; color:var(--text-primary); flex-shrink:0;
+	    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }
+	  .row-s { font-size:clamp(0.72em,2.3vw,0.78em); color:var(--text-secondary); flex:1; min-width:0;
+	    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+	  /* buttons */
+	  .btns { display:flex; gap:4px; flex-shrink:0; margin-left:auto; }
+	  .btn-s {
+	    background:var(--bg-page); color:var(--text-primary); border:none; padding:2px 8px;
+	    border-radius:4px; font-size:0.7em; cursor:pointer; font-weight:600;
+	  }
+	  .btn-s:hover { background:color-mix(in srgb, var(--bg-page) 90%, #000); }
+	  .btn-s.active { background:#0071e3; color:#fff; }
+	  .btn-r {
+	    display:inline-block; padding:2px 8px; border-radius:4px;
+	    font-size:0.7em; text-decoration:none; background:#0071e3; color:#fff; font-weight:600;
+	  }
+	  .btn-r:hover { background:#0077ed; }
+	  .src { font-size:0.7em; color:var(--text-tertiary); margin-left:4px; }
+	  .hero .btn-s { background:rgba(255,255,255,0.15); color:#fff; }
+	  .hero .btn-s:hover { background:rgba(255,255,255,0.25); }
+	  .hero .btn-s.active { background:#fff; color:#1d1d1f; }
+	  .hero .btn-r { background:rgba(255,255,255,0.2); color:#fff; }
+	  .hero .btn-r:hover { background:rgba(255,255,255,0.35); }
+	  .hero .src { color:rgba(255,255,255,0.4); }
+
+	  .ft { text-align:center; color:var(--text-tertiary); font-size:0.75em; padding:20px 14px 28px; }
+
+	  /* video section */
+	  .vsection { margin-top:14px; }
+	  .vsection-title {
+	    font-size:clamp(0.85em,3vw,1em); font-weight:700; color:#9333ea; margin-bottom:10px;
+	    padding-left:2px; letter-spacing:0.5px;
+	  }
+	  .vgrid { display:flex; flex-direction:column; gap:10px; }
+	  .vcard {
+	    display:flex; gap:12px; background:var(--bg-card); border-radius:12px; overflow:hidden;
+	    box-shadow:var(--shadow); transition:transform 0.15s,box-shadow 0.2s,background 0.2s;
+	  }
+	  .vcard:hover { transform:translateY(-2px); box-shadow:var(--shadow-hover); }
+	  .vcard-img {
+	    width:140px; min-height:80px; flex-shrink:0; background-size:cover; background-position:center;
+	    background-color:var(--bg-page); position:relative; display:block; text-decoration:none;
+	  }
+	  .vcard-dur {
+	    position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff;
+	    font-size:0.65em; padding:1px 5px; border-radius:3px; font-weight:600;
+	  }
+	  .vcard-info { flex:1; padding:10px 12px 10px 0; min-width:0; display:flex; flex-direction:column; justify-content:center; }
+	  .vcard-t {
+	    font-size:clamp(0.8em,2.8vw,0.88em); font-weight:700; color:var(--text-primary); line-height:1.4; margin-bottom:4px;
+	    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+	    transition:color 0.2s;
+	  }
+	  .vcard-meta { font-size:0.74em; color:var(--text-secondary); }
+
+	  /* mobile */
+	  @media (max-width:480px) {
+	    .hdr { padding:28px 16px 22px; }
+	    .wrap { padding:12px 10px; }
+	    .tiles { grid-template-columns:1fr; gap:8px; }
+	    .tile { padding:12px; }
+	    .tile-img { height:120px; }
+	    .hero { min-height:160px; border-radius:10px; }
+	    .hero-mask { padding:16px 14px; }
+	    .vcard-img { width:110px; min-height:70px; }
+	  }
+
+	  /* auto dark mode */
+	  @media (prefers-color-scheme: dark) {
+	    :root:not(.light-mode) {
+	      --bg-page: #1a1a2e;
+	      --bg-card: #1e293b;
+	      --text-primary: #e2e8f0;
+	      --text-secondary: #94a3b8;
+	      --text-tertiary: #64748b;
+	      --text-ov: #94a3b8;
+	      --shadow: 0 1px 3px rgba(0,0,0,0.2);
+	      --shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
+	    }
+	  }
+	</style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  <div class="hdr">
+    <h1>AI 垂直日报</h1>
+    <div class="sub">2026-06-10 · 5 条精选</div>
+  </div>
+  <div class="wrap">
+  <div class="ov">
+    <h3>今日概览</h3>
+    <ul>
+      <li><strong>产品</strong>：欧盟发布临时措施，要求 Meta 向第三方 AI 助手免费开放 WhatsApp、在 AgentsView 中为 Claude Fable 5 设置自定义价格、Hugging Face 博客发布语音智能体代码切换基准测试</li>
+      <li><strong>模型</strong>：Cohere发布North Mini Code：面向开发者的开源编码模型</li>
+      <li><strong>行业</strong>：里程碑式德国裁决：Google AI Overviews 被视为谷歌自身言论，需为错误回答承担责任</li>
+    </ul>
+  </div>
+  
+    <div class="hero" data-original-lang="zh" style="background-image:url('https://images.unsplash.com/photo-1689439518156-3659596b5c6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5Njc0MTF8MHwxfHNlYXJjaHwxfHwlRTYlQUMlQTclRTclOUIlOUYlRTUlOEYlOTElRTUlQjglODMlRTQlQjglQjQlRTYlOTclQjYlRTYlOEUlQUElRTYlOTYlQkQlMjAlRTglQTYlODElRTYlQjElODIlMjBNZXRhJTIwJUU1JTkwJTkxJUU3JUFDJUFDJUU0JUI4JTg5JUU2JTk2JUI5JTIwQUklMjB0ZWNobm9sb2d5JTIwcHJvZHVjdCUyMGxhdW5jaHxlbnwxfDB8fHwxNzgxMDYxODg5fDA&ixlib=rb-4.1.0&q=80&w=1080'), linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);background-size:cover;background-position:center;background-blend-mode:overlay;">
+      <div class="hero-mask">
+        <div class="hero-t">欧盟发布临时措施，要求 Meta 向第三方 AI 助手免费开放 WhatsApp</div>
+        <div class="hero-s">欧盟委员会6月9日宣布临时措施，责令Meta在反垄断调查结束前免费向第三方AI助手开放WhatsApp访问权限。Meta于2025年10月15日禁止第三方AI助手调用WhatsApp for Business API，意图让自家Meta A...</div>
+        <div class="hero-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://www.ithome.com/0/962/206.htm" class="btn-r" target="_blank">原文</a></span><span class="src">ithome.com</span></div>
+      </div>
+    </div>
+  <div class="tiles">
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #2563eb">
+      <div class="tile-img" style="background-image:url('https://images.unsplash.com/photo-1675752520795-8b6d79321e88?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5Njc0MTF8MHwxfHNlYXJjaHwxfHwlRTUlOUMlQTglMjBBZ2VudHNWaWV3JTIwJUU0JUI4JUFEJUU0JUI4JUJBJTIwQ2xhdWRlJTIwRmFibGUlMjB0ZWNobm9sb2d5JTIwcHJvZHVjdCUyMGxhdW5jaHxlbnwxfDB8fHwxNzgxMDYxODg4fDA&ixlib=rb-4.1.0&q=80&w=1080')"></div>
+      <div class="tile-t">在 AgentsView 中为 Claude Fable 5 设置自定义价格</div>
+      <div class="tile-s">Wes McKinney 开发的 AgentsView 是一个用于追踪本地编码智能体 token 使用情况的工具。由于近日发布的 Claude Fable 5 尚未被收录进 AgentsView 的定价数据库，作者利用 Fable 逆向工程...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://simonwillison.net/2026/Jun/9/agentsview-custom-model-price" class="btn-r" target="_blank">原文</a></span><span class="src">simonwillison.net</span></div>
+    </div>
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #2563eb">
+      <div class="tile-img" style="background-image:url('https://images.unsplash.com/photo-1762028892701-692dc360db08?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5Njc0MTF8MHwxfHNlYXJjaHwxfHxIdWdnaW5nJTIwRmFjZSUyMCVFNSU4RCU5QSVFNSVBRSVBMiVFNSU4RiU5MSVFNSVCOCU4MyVFOCVBRiVBRCVFOSU5RiVCMyVFNiU5OSVCQSVFOCU4MyVCRCVFNCVCRCU5MyVFNCVCQiVBMyVFNyVBMCU4MSVFNSU4OCU4NyVFNiU4RCVBMiVFNSU5RiVCQSVFNSU4NyU4NiVFNiVCNSU4QiVFOCVBRiU5NSUyMHRlY2hub2xvZ3klMjBwcm9kdWN0JTIwbGF1bmNofGVufDF8MHx8fDE3ODEwNjE4ODl8MA&ixlib=rb-4.1.0&q=80&w=1080')"></div>
+      <div class="tile-t">Hugging Face 博客发布语音智能体代码切换基准测试</div>
+      <div class="tile-s">Hugging Face 博客发布针对语音智能体处理代码切换语音的基准测试。数据集覆盖西班牙语-英语、法语-英语、加拿大法语-英语和德语-英语四对语言，基于人力资源与IT服务管理场景构建。采用词错误率、语义词错误率和答案错误率三项指标评估七...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://huggingface.co/blog/ServiceNow-AI/code-switching" class="btn-r" target="_blank">原文</a></span><span class="src">huggingface.co</span></div>
+    </div>
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #0d9488">
+      <div class="tile-img" style="background-image:url('https://images.unsplash.com/photo-1716436329836-208bea5a55e6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5Njc0MTF8MHwxfHNlYXJjaHwxfHxDb2hlcmUlRTUlOEYlOTElRTUlQjglODNOb3J0aCUyME1pbmklMjBDb2RlJTIwJUU5JTlEJUEyJUU1JTkwJTkxJUU1JUJDJTgwJUU1JThGJTkxJUU4JTgwJTg1JUU3JTlBJTg0JTIwQUklMjBhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwbW9kZWx8ZW58MXwwfHx8MTc4MTA2MTg4OXww&ixlib=rb-4.1.0&q=80&w=1080')"></div>
+      <div class="tile-t">Cohere发布North Mini Code：面向开发者的开源编码模型</div>
+      <div class="tile-s">Cohere发布North Mini Code，一款30B参数MoE模型（3B活跃参数），Apache 2.0开源。在Artificial Analysis Coding Index上得分33.4，超越Qwen3.5、Gemma 4等同类模...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://huggingface.co/blog/CohereLabs/introducing-north-mini-code" class="btn-r" target="_blank">原文</a></span><span class="src">huggingface.co</span></div>
+    </div>
+    <div class="tile" data-original-lang="zh" style="border-top:3px solid #ea580c">
+      <div class="tile-img" style="background-image:url('https://images.unsplash.com/photo-1592096304832-62463bfdc822?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5Njc0MTF8MHwxfHNlYXJjaHwxfHwlRTklODclOEMlRTclQTglOEIlRTclQTIlOTElRTUlQkMlOEYlRTUlQkUlQjclRTUlOUIlQkQlRTglQTMlODElRTUlODYlQjMlMjBHb29nbGUlMjBBSSUyME92ZXJ2aWV3cyUyMCVFOCVBMiVBQiUyMHRlY2hub2xvZ3klMjBpbmR1c3RyeSUyMGJ1c2luZXNzfGVufDF8MHx8fDE3ODEwNjE4OTB8MA&ixlib=rb-4.1.0&q=80&w=1080')"></div>
+      <div class="tile-t">里程碑式德国裁决：Google AI Overviews 被视为谷歌自身言论，需为错误回答承担责任</div>
+      <div class="tile-s">德国地方法院裁定，Google 对其 AI 概览生成的内容直接承担法律责任，不能援引搜索引擎运营商原有的有限责任保护。涉案 AI 概览错误地将两家出版商与欺诈行为关联，且相关声明未出现在任何链接来源中。该裁决可能为全球 AI 生成内容责任认...</div>
+      <div class="tile-b"><span class="btns"><button class="btn-s" onclick="toggleLang(this)">EN</button><a href="https://the-decoder.com/landmark-german-ruling-declares-googles-ai-overviews-are-googles-own-words-and-makes-it-liable-for-false-answers" class="btn-r" target="_blank">原文</a></span><span class="src">the-decoder.com</span></div>
+    </div>
+  </div>
+  </div>
+  <div class="ft">本文由 AI 自动整理 · 内容仅供参考 · 配图：<a href="https://unsplash.com/photos/a-person-holding-a-cell-phone-in-front-of-a-large-screen-kUATfFyJQQ4" target="_blank" style="color:#aeaeb2;text-decoration:underline;">Julio Lopez</a>、<a href="https://unsplash.com/photos/a-person-holding-a-cell-phone-in-front-of-a-large-screen-KM-c5qXs0XA" target="_blank" style="color:#aeaeb2;text-decoration:underline;">Walls.io</a>、<a href="https://unsplash.com/photos/man-in-suit-presenting-equipment-at-a-trade-show-rngipgK6gDo" target="_blank" style="color:#aeaeb2;text-decoration:underline;">Hossein Nasr</a>、<a href="https://unsplash.com/photos/a-computer-chip-with-the-letter-ai-on-it-U9e6ySWMW_0" target="_blank" style="color:#aeaeb2;text-decoration:underline;">BoliviaInteligente</a>、<a href="https://unsplash.com/photos/a-google-sign-in-front-of-some-bushes-and-trees-lKjX3S4pdog" target="_blank" style="color:#aeaeb2;text-decoration:underline;">Greg Bulla</a>（Unsplash）</div>
+
+  <script>
+  async function toggleLang(btn) {
+    var card = btn.closest('[data-original-lang]');
+    var content = card.querySelector('.hero-s, .tile-s, .row-s');
+    if (!content) content = card;
+    var originalLang = card.dataset.originalLang;
+
+    if (card.dataset.translated) {
+      if (card.dataset.showing === 'translated') {
+        content.textContent = card.dataset.originalText;
+        card.dataset.showing = 'original';
+        btn.textContent = originalLang === 'zh' ? 'EN' : '中文';
+        btn.classList.remove('active');
+      } else {
+        content.textContent = card.dataset.translated;
+        card.dataset.showing = 'translated';
+        btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+        btn.classList.add('active');
+      }
+      return;
+    }
+
+    var text = content.textContent;
+    card.dataset.originalText = text;
+    card.dataset.showing = 'original';
+    btn.textContent = '...';
+    btn.disabled = true;
+
+    var targetLang = originalLang === 'zh' ? 'en' : 'zh-CN';
+    var sourceLang = originalLang === 'zh' ? 'zh-CN' : 'en';
+
+    try {
+      var url = 'https://api.mymemory.translated.net/get?q=' +
+                encodeURIComponent(text.substring(0, 500)) +
+                '&langpair=' + sourceLang + '|' + targetLang;
+      var resp = await fetch(url);
+      var data = await resp.json();
+      var translated = data.responseData.translatedText;
+      card.dataset.translated = translated;
+      content.textContent = translated;
+      card.dataset.showing = 'translated';
+      btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
+      btn.classList.add('active');
+    } catch(e) {
+      btn.textContent = '失败';
+      setTimeout(function() { btn.textContent = originalLang === 'zh' ? 'EN' : '中文'; }, 2000);
+    }
+    btn.disabled = false;
+  }
+
+  function toggleTheme() {
+    var body = document.body;
+    var btn = document.getElementById('themeBtn');
+    body.classList.toggle('dark-mode');
+    body.classList.remove('light-mode');
+    btn.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
+    try { localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light'); } catch(e) {}
+  }
+  try {
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('themeBtn').textContent = '☀️';
+    }
+  } catch(e) {}
+	
+  </script>
+</body>
+</html>
