@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<title>{{ label }} · {{ date_str }}</title>
+	<style>
+{% include 'daily.css' %}
+	</style>
+</head>
+<body>
+  <div class="progress-bar" id="progressBar"></div>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☾</button>
+
+{# ── masthead ── #}
+  <div class="masthead">
+    <div class="masthead-left">
+      <h1>{{ label }}</h1>
+      <div class="tagline">AI-Powered Daily Digest</div>
+{% if comparison %}
+      <div class="comparison">{{ comparison }}</div>
+{% endif %}
+    </div>
+    <div class="masthead-right">
+      <div class="date">{{ date_str }}</div>
+      <div class="count">{{ items_flat|length }} items curated</div>
+{% if word_count %}
+      <div class="read-stats">{{ word_count }} 字 · 约 {{ read_minutes }} 分钟</div>
+{% endif %}
+      <button class="btn-share" onclick="copyLink()" title="复制本期链接">&#x1F4CB; 复制本期链接</button>
+    </div>
+  </div>
+
+{# ── pill tags ── #}
+  <div class="pills">
+{% for cat, items in groups.items() %}
+{% set cat_color = '#' ~ colors.get(cat, '6b7280') %}
+    <a class="pill" href="#sec-{{ cat }}" data-cat="{{ cat }}">
+      <span class="pill-dot" style="background:{{ cat_color }}"></span>
+      {{ cat }}
+      <span class="pill-count">{{ items|length }}</span>
+    </a>
+{% endfor %}
+  </div>
+
+{% if highlight_zh %}
+  <div class="highlight">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+      <span class="highlight-label">TODAY'S HIGHLIGHT</span>
+      <button class="btn-lang{% if not highlight_en %} btn-lang-disabled{% endif %}" onclick="toggleLang(this)"{% if not highlight_en %} title="暂无英文" disabled{% endif %}>EN</button>
+    </div>
+    <p class="highlight-text bilingual" data-zh="{{ highlight_zh|e }}" data-en="{{ highlight_en|e if highlight_en else highlight_zh|e }}">{{ highlight_zh }}</p>
+  </div>
+{% endif %}
+
+  <div class="content">
+
+{# ── hero（第 1 条）── #}
+{% if article_flat|length > 0 %}
+{% set item = article_flat[0] %}
+{% set img_url = article_images[0] if article_images|length > 0 else none %}
+{% set cat_color = '#' ~ item.color %}
+{% set has_en = item.title_en or item.summary_en %}
+    <div class="hero" data-cat="{{ item.category }}">
+      <div class="hero-img" style="background-image:url('{{ img_url }}')">
+        <span class="hero-cat-badge" style="background:{{ cat_color }}">{{ item.category }}</span>
+      </div>
+      <div class="hero-text">
+        <div class="hero-title">
+          <span class="bilingual" data-zh="{{ item.title|e }}" data-en="{{ item.title_en|e }}">{{ item.title|e }}</span>
+        </div>
+        <div class="hero-summary">
+          <span class="bilingual" data-zh="{{ item.summary|e if item.summary else '' }}" data-en="{{ item.summary_en|e if item.summary_en else '' }}">{{ item.summary|e if item.summary else '' }}</span>
+        </div>
+        <div class="hero-meta">
+          <span>{{ item.domain }}</span>
+          <button class="btn-lang{% if not has_en %} btn-lang-disabled{% endif %}" onclick="toggleLang(this)"{% if not has_en %} title="暂无英文" disabled{% endif %}>EN</button>
+{% if item.accessible|default(true) %}
+          <a href="{{ item.link|e }}" class="btn-r" target="_blank">原文</a>
+{% endif %}
+        </div>
+      </div>
+    </div>
+{% endif %}
+
+{# ── 文章网格（第 2-5 条）── #}
+{% set grid_items = article_flat[1:5] %}
+{% if grid_items|length > 0 %}
+  <div class="agrid">
+{% for item in grid_items %}
+{% set cat_color = '#' ~ item.color %}
+{% set has_en = item.title_en or item.summary_en %}
+    <div class="acard" data-cat="{{ item.category }}" style="border-left-color:{{ cat_color }}">
+      <span class="acard-cat" style="background:{{ cat_color }}14;color:{{ cat_color }}">{{ item.category }}</span>
+      <div class="acard-title">
+        <span class="bilingual" data-zh="{{ item.title|e }}" data-en="{{ item.title_en|e }}">{{ item.title|e }}</span>
+      </div>
+      <div class="acard-summary">
+        <span class="bilingual" data-zh="{{ item.summary|e if item.summary else '' }}" data-en="{{ item.summary_en|e if item.summary_en else '' }}">{{ item.summary|e if item.summary else '' }}</span>
+      </div>
+      <div class="acard-meta">
+        <span>{{ item.domain }}</span>
+        <button class="btn-lang{% if not has_en %} btn-lang-disabled{% endif %}" onclick="toggleLang(this)"{% if not has_en %} title="暂无英文" disabled{% endif %}>EN</button>
+{% if item.accessible|default(true) %}
+        <a href="{{ item.link|e }}" class="btn-r" target="_blank">原文</a>
+{% endif %}
+      </div>
+    </div>
+{% endfor %}
+  </div>
+{% endif %}
+
+{# ── rows（第 6 条起）── #}
+{% if article_flat|length > 5 %}
+  <div class="rows">
+{% for item in article_flat[5:] %}
+{% if loop.first or article_flat[loop.index0 + 5].category != article_flat[loop.index0 + 4].category %}
+    <div id="sec-{{ item.category }}" style="height:0;overflow:hidden"></div>
+{% endif %}
+    <div class="row" data-cat="{{ item.category }}">
+      <span class="row-dot" style="background:#{{ item.color }}"></span>
+      <span class="row-title">
+        <span class="bilingual" data-zh="{{ item.title|e }}" data-en="{{ item.title_en|e }}">{{ item.title|e }}</span>
+        <button class="btn-lang{% if not item.title_en %} btn-lang-disabled{% endif %}" onclick="toggleLang(this)"{% if not item.title_en %} title="暂无英文" disabled{% endif %} style="margin-left:6px">EN</button>
+      </span>
+      <span class="row-src">{{ item.domain }}</span>
+{% if item.accessible|default(true) %}
+      <a href="{{ item.link|e }}" class="btn-r" target="_blank">原文</a>
+{% endif %}
+    </div>
+{% endfor %}
+  </div>
+{% endif %}
+
+{# ── 趋势洞察 ── #}
+{% if trend_zh %}
+  <div class="trend" data-cat="行业">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <div class="trend-label">Trend Insight</div>
+      <button class="btn-lang{% if not trend_en %} btn-lang-disabled{% endif %}" onclick="toggleLang(this)"{% if not trend_en %} title="暂无英文" disabled{% endif %}>EN</button>
+    </div>
+    <div class="trend-body bilingual" data-zh="{{ trend_zh }}" data-en="{{ trend_en }}">{{ trend_zh }}</div>
+  </div>
+{% endif %}
+
+{# ── 视频精选 ── #}
+{% if video_flat %}
+  <div class="vsection" data-cat="视频">
+    <div class="vsection-label">Video Picks</div>
+    <div class="vgrid">
+{% for item in video_flat %}
+{% set play = item.play if item.play is defined else 0 %}
+{% set play_str = (play // 10000) ~ '万' if play >= 10000 else play|string %}
+      <div class="vcard">
+        <a href="{{ item.link|e }}" target="_blank" class="vcard-img" style="background-image:url('{{ item.thumbnail|e if item.thumbnail is defined else '' }}')">
+          <span class="vcard-dur">{{ item.duration|e if item.duration is defined else '' }}</span>
+        </a>
+        <div class="vcard-info">
+          <div class="vcard-t">{{ item.title|e }}</div>
+          <div class="vcard-meta">{{ item.author|e if item.author is defined else '' }} · {{ play_str }}播放</div>
+        </div>
+      </div>
+{% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+  </div>
+
+{# ── footer ── #}
+  <div class="ft">
+    <div>
+      <div style="margin-bottom:4px">数据来源：AI HOT · Hugging Face · Simon Willison · The Decoder · B站</div>
+      {% if creds %}<div>{{ creds }}</div>{% endif %}
+    </div>
+    <div style="text-align:right">
+      <div style="margin-bottom:4px">由 <strong>DeepSeek</strong> 自动生成</div>
+      <a href="https://github.com/vv0rfr/ai-daily" target="_blank">GitHub</a>
+    </div>
+  </div>
+
+  <script>var PAGE_URL = "{{ page_url }}";</script>
+  <script>
+{% include 'daily.js' %}
+  </script>
+</body>
+</html>

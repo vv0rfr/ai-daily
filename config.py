@@ -15,6 +15,8 @@ AI_FEEDS = {
     "Hugging Face": "https://huggingface.co/blog/feed.xml",
     "Simon Willison": "https://simonwillison.net/atom/everything/",
     "The Decoder": "https://the-decoder.com/feed/",
+    "量子位": "https://www.qbitai.com/feed",
+    "TechCrunch AI": "https://techcrunch.com/category/artificial-intelligence/feed/",
 }
 
 # === 科技频道数据源 ===
@@ -28,19 +30,17 @@ TECH_FEEDS = {
 }
 
 # 筛选配置
-TOP_N = 5  # 每次生成文章取 Top N 条（精简排版）
+TOP_N = 12  # 每次生成文章取 Top N 条
 VIDEO_TOP_N = 3  # 视频取 Top N 条
+TIME_FILTER_HOURS = 48  # 时间过滤窗口（小时），低频源内容不易被丢弃
 
-# B站视频搜索关键词
+# B站视频搜索关键词（通用短词，配合 fetcher.py 标题过滤）
 BILIBILI_KEYWORDS = [
-    "AI 采访",
-    "AI 访谈",
-    "人工智能 采访",
-    "人工智能 访谈",
-    "AI agent 采访",
-    "大模型 采访",
-    "AI 深度访谈",
-    "AI CEO 访谈",
+    "AI 教程",
+    "大模型评测",
+    "AI 工具",
+    "AI 开源",
+    "GPT 测评",
 ]
 
 # AI 频道分类

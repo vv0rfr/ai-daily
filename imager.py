@@ -70,7 +70,7 @@ def _unsplash_search(keyword: str):
             "https://api.unsplash.com/search/photos",
             headers=headers,
             params=params,
-            timeout=8,  # 本地跑超时短点，快速回退 Picsum；GitHub Actions上飞快
+            timeout=3,  # 快速失败，走 Picsum 兜底
         )
     except requests.RequestException as e:
         logger.warning(f"Unsplash 请求失败: {e}")

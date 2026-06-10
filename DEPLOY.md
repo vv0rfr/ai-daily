@@ -12,7 +12,8 @@
 
 | Secret 名称 | 必填 | 说明 |
 |-------------|------|------|
-| `ANTHROPIC_API_KEY` | 否 | Claude API 密钥，用于 AI 改写文章（不配则用模板生成） |
+| `DEEPSEEK_API_KEY` | 推荐 | DeepSeek API 密钥，AI 写文章主力（成本低、质量高） |
+| `ANTHROPIC_API_KEY` | 否 | Claude API 密钥，DeepSeek 不可用时的备用 |
 | `WECHAT_APP_ID` | 否 | 微信公众号 AppID |
 | `WECHAT_APP_SECRET` | 否 | 微信公众号 AppSecret |
 | `SERVERCHAN_KEY` | 否 | Server酱推送 Key，用于微信通知 |

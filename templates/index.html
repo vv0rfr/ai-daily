@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 垂直日报 · 历史归档</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F1ED;--bg-card:#FFFFFF;--text:#1A1714;--text-2:#6B6560;--text-3:#A09890;--border:#DDD8D2;--r:8px;--serif:'Instrument Serif',Georgia,serif;--sans:'DM Sans',-apple-system,sans-serif;--mono:'DM Mono',monospace}
+.dark-mode{--bg:#111110;--bg-card:#1C1B19;--text:#EDE8E0;--text-2:#9C9590;--text-3:#605B55;--border:#2E2B27}
+@media(prefers-color-scheme:dark){:root:not(.light-mode){--bg:#111110;--bg-card:#1C1B19;--text:#EDE8E0;--text-2:#9C9590;--text-3:#605B55;--border:#2E2B27}}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;transition:background .3s,color .3s}
+.wrap{max-width:600px;margin:0 auto;padding:0 24px}
+.masthead{padding:48px 0 24px}
+.masthead-eyebrow{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-3);margin-bottom:4px}
+.masthead-title{font-family:var(--serif);font-size:36px;line-height:1.1}
+.masthead-sub{font-family:var(--mono);font-size:12px;color:var(--text-3);margin-top:8px}
+.divider{height:1px;background:var(--border);margin:0 0 20px}
+.list{list-style:none}
+.list-item{padding:14px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;transition:opacity .2s}
+.list-item:hover{opacity:.7}
+.list-item:last-child{border-bottom:none}
+.list-date{font-family:var(--serif);font-size:20px}
+.list-count{font-family:var(--mono);font-size:12px;color:var(--text-3);margin-left:8px}
+.list-link{font-family:var(--mono);font-size:12px;color:var(--text-3)}
+.list-empty{color:var(--text-3);padding:20px 0;font-style:italic}
+.theme-toggle{position:fixed;top:20px;right:20px;z-index:9998;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.footer{padding:24px 0 44px;border-top:1px solid var(--border);margin-top:20px;font-size:12px;color:var(--text-3)}
+.footer a{color:var(--text-2)}
+</style>
+</head>
+<body>
+<button class="theme-toggle" aria-label="切换主题">☀</button>
+<div class="wrap">
+<header class="masthead">
+<div class="masthead-eyebrow">AI 垂直日报</div>
+<h1 class="masthead-title">历史归档</h1>
+<div class="masthead-sub">{{ total }} 期{% if date_range %} · {{ date_range }}{% endif %}</div>
+</header>
+<div class="divider"></div>
+<ul class="list">
+{% for entry in entries %}
+<li class="list-item">
+<div>
+<span class="list-date">{{ entry.date }}</span>
+{% if entry.count %}<span class="list-count">{{ entry.count }} 条</span>{% endif %}
+</div>
+<a href="{{ entry.filename }}" class="list-link">阅读 →</a>
+</li>
+{% else %}
+<li class="list-empty">暂无历史日报</li>
+{% endfor %}
+</ul>
+<footer class="footer">
+<a href="https://github.com/vv0rfr/ai-daily" target="_blank" rel="noopener">GitHub ↗</a>
+</footer>
+</div>
+<script>
+(function(){var r=document.documentElement,b=document.querySelector('.theme-toggle');if(!b)return;var s=localStorage.getItem('theme');if(s==='dark'){r.classList.add('dark-mode');r.classList.remove('light-mode')}else if(s==='light'){r.classList.add('light-mode');r.classList.remove('dark-mode')}function ic(){b.textContent=r.classList.contains('dark-mode')?'☾':'☀'}ic();b.addEventListener('click',function(){if(r.classList.contains('dark-mode')){r.classList.remove('dark-mode');r.classList.add('light-mode');localStorage.setItem('theme','light')}else{r.classList.remove('light-mode');r.classList.add('dark-mode');localStorage.setItem('theme','dark')}ic()})})();
+</script>
+</body>
+</html>

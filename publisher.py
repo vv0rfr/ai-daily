@@ -87,6 +87,7 @@ def md_to_html(md_content: str) -> str:
                 ("硬件", "#dc2626", "#fef2f2"),
                 ("开发", "#6b7280", "#f9fafb"),
                 ("技巧", "#e11d48", "#fff1f2"),
+                ("趋势", "#334155", "#f1f5f9"),
             ]
             color, bg = "#0071e3", "#f0f7ff"
             for keyword, c, b in cat_colors:
@@ -180,9 +181,14 @@ def md_to_html(md_content: str) -> str:
                 html_parts.append("</ul>")
                 in_list = False
             text = _parse_inline(line, links)
-            html_parts.append(
-                f'<p style="margin:10px 0;font-size:15px;line-height:1.75;color:#333;">{text}</p>'
-            )
+            # 跳过纯链接行（微信不展示，由底部统一跳转）
+            stripped = text.strip()
+            if stripped.startswith('<span') and stripped.endswith('</span>'):
+                pass
+            else:
+                html_parts.append(
+                    f'<p style="margin:10px 0;font-size:15px;line-height:1.75;color:#333;">{text}</p>'
+                )
 
     if in_list:
         html_parts.append("</ul>")
@@ -198,7 +204,7 @@ def _parse_inline(text: str, links: list = None) -> str:
         if links is not None:
             links.append((t, u))
         # 微信不支持外链，显示为带🔗的纯文本
-        return f'<span style="color:#0071e3;">🔗 {t}</span>'
+        return f'<span style="color:#2A6B6B;">🔗 {t}</span>'
 
     text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", replace_link, text)
 

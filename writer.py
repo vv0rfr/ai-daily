@@ -1,11 +1,14 @@
 """调用 AI API 生成公众号文章 + 内嵌阅读 HTML 页面"""
 
 import os
-import html
-import urllib.parse
 from datetime import datetime
-from config import ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, DEEPSEEK_API_URL, OUTPUT_DIR
-from imager import get_image_url, batch_get_images
+from jinja2 import Environment, FileSystemLoader
+from config import ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, DEEPSEEK_API_URL
+from imager import batch_get_images
+
+# Jinja2 模板环境（相对于项目根目录）
+_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+_jinja_env = Environment(loader=FileSystemLoader(_TEMPLATES_DIR))
 
 
 SYSTEM_PROMPT = """你是一位资深 AI 科技媒体编辑，负责将每日 AI 动态整理成公众号文章。
@@ -15,14 +18,150 @@ SYSTEM_PROMPT = """你是一位资深 AI 科技媒体编辑，负责将每日 AI
 - 开头用 1-2 句话概括今天最值得关注的事
 - 每条动态用简练的语言概括核心信息，加上你的简短点评
 - 语言自然、有观点，不要像机器翻译
-- 结尾可以加一段总结或展望
 - 适合公众号阅读，段落不要太长
 
 输出格式要求：
 - 用 Markdown 格式
 - 标题用 # ，分类用 ## ，每条动态用 ### 或加粗标题
-- 每条动态附上原文链接
-- 不要输出 ```markdown 代码块标记"""
+- 每条动态必须包含以下字段（每行一个，冒号后跟内容）：
+  **标题：** 中文标题
+  **标题（英文）：** English Title
+  **摘要：** 中文摘要，1-2句话概括核心信息
+  **摘要（英文）：** English summary, 1-2 sentences, professional tone
+  **来源：** 来源名
+  **链接：** URL
+- 英文标题和摘要需要自然流畅，不是逐字翻译，而是面向英文读者的重新表述
+- 不要输出 ```markdown 代码块标记
+
+在输出所有条目之后，新增一个 ## 🔍 趋势洞察 板块，要求：
+- 从今天的新闻中发现至少 2 条新闻之间的关联性
+- 指出这反映了什么行业趋势
+- 给出一个有观点的判断或预测，必须具体，不要泛泛而谈
+- 控制在 150-200 字以内
+禁止使用以下表达：'值得关注'、'前景广阔'、'未来可期'、'值得期待'、'让我们拭目以待'
+必须给出具体证据支撑观点，否则宁可不说
+
+同时输出英文版趋势洞察，格式为：
+### 趋势洞察（英文）
+English version of the trend analysis, same insights, natural English prose.
+
+在文章最开头（标题之后、正文之前），用以下格式输出今日重点：
+### 今日重点
+一句话中文概括今天最值得关注的事（不超过30字）
+### 今日重点（英文）
+English one-liner, same spirit, under 20 words"""
+
+
+def _parse_bilingual_fields(article_text: str, groups: dict):
+    """从 AI 生成的文章中提取英文标题/摘要，注入到 groups 中的每个 item"""
+    import re
+    all_items = [it for items in groups.values() for it in items]
+    idx = 0
+    lines = article_text.split("\n")
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        # 匹配 "### 标题：XXX" 或 "**标题：** XXX"
+        m = re.search(r"(?:###\s*)?[*]*标题[：:][*]*\s*(.+)", line)
+        if m and "英文" not in line:
+            title_en = ""
+            summary_en = ""
+            j = i + 1
+            while j < len(lines) and j < i + 10:
+                l2 = lines[j].strip()
+                m2 = re.search(r"[*]*标题（英文）[：:][*]*\s*(.+)", l2)
+                if m2:
+                    title_en = m2.group(1).strip()
+                m3 = re.search(r"[*]*摘要（英文）[：:][*]*\s*(.+)", l2)
+                if m3:
+                    summary_en = m3.group(1).strip()
+                if re.match(r"(?:###\s*)?[*]*标题[：:]", l2) and "英文" not in l2 and j > i + 1:
+                    break
+                if l2.startswith("## "):
+                    break
+                j += 1
+            if idx < len(all_items):
+                all_items[idx]["title_en"] = title_en
+                all_items[idx]["summary_en"] = summary_en
+                idx += 1
+        i += 1
+    for it in all_items:
+        it.setdefault("title_en", "")
+        it.setdefault("summary_en", "")
+
+
+def _extract_highlight(article_text: str) -> tuple[str, str]:
+    """从 AI 文章中提取今日重点（中英文），返回 (highlight_zh, highlight_en)"""
+    import re
+    if not article_text:
+        return "", ""
+    lines = article_text.split("\n")
+    highlight_zh = ""
+    highlight_en = ""
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        # 中文今日重点：匹配 "### 今日重点：xxx" 或 "### 今日重点" + 下一行
+        if re.match(r"(?:###\s*)?[*]*今日重点", stripped) and "英文" not in stripped:
+            # 提取同行内容（去掉标题标记和冒号）
+            content = re.sub(r"^(?:###\s*)?[*]*今日重点[：:]?\s*", "", stripped).strip()
+            if content:
+                highlight_zh = content
+            elif i + 1 < len(lines) and lines[i + 1].strip() and not lines[i + 1].strip().startswith("#"):
+                highlight_zh = lines[i + 1].strip()
+        # 英文今日重点
+        if re.match(r"(?:###\s*)?[*]*今日重点（英文）", stripped):
+            content = re.sub(r"^(?:###\s*)?[*]*今日重点（英文）[：:]?\s*", "", stripped).strip()
+            if content:
+                highlight_en = content
+            elif i + 1 < len(lines) and lines[i + 1].strip() and not lines[i + 1].strip().startswith("#"):
+                highlight_en = lines[i + 1].strip()
+    return highlight_zh, highlight_en
+
+
+def _calc_read_stats(article_text: str) -> tuple[int, int]:
+    """计算文章字数和预计阅读时间（分钟），返回 (word_count, read_minutes)"""
+    import re
+    if not article_text:
+        return 0, 0
+    # 去掉 markdown 标记和链接
+    clean = re.sub(r'[#*`\[\]()<>|_~\-]', '', article_text)
+    clean = re.sub(r'https?://\S+', '', clean)
+    # 中文字符数
+    cn_chars = len(re.findall(r'[一-鿿]', clean))
+    # 英文单词数
+    en_words = len(re.findall(r'[a-zA-Z]+', clean))
+    # 总字数：中文字符 + 英文单词
+    word_count = cn_chars + en_words
+    # 平均阅读速度：中文 400字/分钟，英文 200词/分钟
+    read_minutes = max(1, round(word_count / 400)) if cn_chars > en_words else max(1, round(word_count / 200))
+    return word_count, read_minutes
+
+
+def _generate_comparison(groups: dict, mode: str = "ai") -> str:
+    """生成和昨天的对比摘要"""
+    from database import get_yesterday_articles
+    yesterday = get_yesterday_articles(mode)
+    if yesterday["count"] == 0:
+        return ""
+    today_count = sum(len(v) for v in groups.values())
+    diff = today_count - yesterday["count"]
+    # 分类对比
+    today_cats = {cat: len(items) for cat, items in groups.items()}
+    yest_cats = yesterday["categories"]
+    new_cats = [c for c in today_cats if c not in yest_cats]
+    gone_cats = [c for c in yest_cats if c not in today_cats]
+    parts = []
+    if diff > 0:
+        parts.append(f"今日 {today_count} 条，比昨日多 {diff} 条")
+    elif diff < 0:
+        parts.append(f"今日 {today_count} 条，比昨日少 {abs(diff)} 条")
+    else:
+        parts.append(f"今日 {today_count} 条，与昨日持平")
+    if new_cats:
+        parts.append(f"新增板块：{'、'.join(new_cats)}")
+    if gone_cats:
+        parts.append(f"昨日有但今日无：{'、'.join(gone_cats)}")
+    return "；".join(parts)
 
 
 def generate_overview(groups: dict) -> str:
@@ -37,8 +176,8 @@ def generate_overview(groups: dict) -> str:
     return "\n".join(lines)
 
 
-def generate_article(groups: dict) -> str:
-    """用 AI API（DeepSeek/Claude）生成公众号文章"""
+def generate_article(groups: dict) -> tuple[str, str]:
+    """用 AI API（DeepSeek/Claude）生成公众号文章，返回 (文章内容, 使用的模型)"""
     if not DEEPSEEK_API_KEY and not ANTHROPIC_API_KEY:
         print("  [writer] 未配置 API Key（DeepSeek 或 Claude），使用模板生成")
         return generate_from_template(groups)
@@ -57,6 +196,7 @@ def generate_article(groups: dict) -> str:
             content_lines.append(f"   链接：{item['link']}")
             content_lines.append("")
 
+    content_lines.append("\n请根据以上内容，在文章末尾输出一个'趋势洞察'板块，分析今日多条动态之间的关联和趋势。\n")
     user_prompt = "\n".join(content_lines)
 
     # 优先使用 DeepSeek（OpenAI 兼容格式）
@@ -81,8 +221,9 @@ def generate_article(groups: dict) -> str:
                 article = article[0] + "\n\n" + overview + "\n\n" + article[1]
             else:
                 article = article[0] + "\n\n" + overview
+            _parse_bilingual_fields(article, groups)
             print(f"  [writer] DeepSeek API 生成完成，{len(article)} 字符")
-            return article
+            return article, "deepseek"
         except Exception as e:
             print(f"  [writer] DeepSeek API 调用失败：{e}")
             if not ANTHROPIC_API_KEY:
@@ -107,8 +248,9 @@ def generate_article(groups: dict) -> str:
                 article = article[0] + "\n\n" + overview + "\n\n" + article[1]
             else:
                 article = article[0] + "\n\n" + overview
+            _parse_bilingual_fields(article, groups)
             print(f"  [writer] Claude API 生成完成，{len(article)} 字符")
-            return article
+            return article, "claude"
         except Exception as e:
             print(f"  [writer] Claude API 调用失败：{e}")
             print("  [writer] 回退到模板生成")
@@ -117,8 +259,13 @@ def generate_article(groups: dict) -> str:
     return generate_from_template(groups)
 
 
-def generate_from_template(groups: dict) -> str:
-    """不用 API，直接用模板拼接文章（精排版）"""
+def generate_from_template(groups: dict) -> tuple[str, str]:
+    """不用 API，直接用模板拼接文章（精排版），返回 (文章内容, "template")"""
+    # 模板模式不调 API，双语字段设为空
+    for items in groups.values():
+        for item in items:
+            item.setdefault("title_en", "")
+            item.setdefault("summary_en", "")
     today = datetime.now().strftime("%Y-%m-%d")
     total = sum(len(v) for v in groups.values())
     lines = [f"# AI 日报 · {today}\n"]
@@ -168,6 +315,11 @@ def generate_from_template(groups: dict) -> str:
                 lines.append(f"> [🔗 阅读原文]({item['link']})\n")
                 all_links.append((title, item['link']))
 
+    # 趋势洞察占位
+    lines.append("---\n")
+    lines.append("## 🔍 趋势洞察\n")
+    lines.append("> 💡 需配置 DeepSeek API Key 后自动生成趋势分析\n")
+
     # 原文链接汇总
     lines.append("---\n")
     lines.append("### 📎 原文链接\n")
@@ -180,16 +332,63 @@ def generate_from_template(groups: dict) -> str:
 
     article = "\n".join(lines)
     print(f"  [writer] 模板生成完成，{len(article)} 字符")
-    return article
+    return article, "template"
 
 
-def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报") -> str:
-    """生成杂志风格 HTML 页面"""
-    items_flat = []
-    for cat, items in groups.items():
-        for item in items:
-            items_flat.append({**item, "category": cat})
+def _extract_trend_html(article_text: str) -> tuple[str, str]:
+    """从 Markdown 文章中提取趋势洞察板块（中文和英文），转为 HTML。
+    返回 (trend_zh_html, trend_en_html)"""
+    import re
+    if not article_text or "趋势洞察" not in article_text:
+        return "", ""
+    lines = article_text.split("\n")
+    in_trend = False
+    in_en = False
+    trend_zh_lines = []
+    trend_en_lines = []
 
+    for line in lines:
+        # 英文趋势洞察子标题
+        if "趋势洞察（英文）" in line or "Trend Insight" in line:
+            if line.startswith("###") or line.startswith("##"):
+                in_en = True
+                in_trend = False
+                continue
+        # 中文趋势洞察标题
+        if "趋势洞察" in line and ("##" in line or "###" in line) and "英文" not in line:
+            in_trend = True
+            in_en = False
+            continue
+        if in_trend or in_en:
+            if line.startswith("## ") or (line.startswith("# ") and not line.startswith("###")):
+                in_trend = False
+                in_en = False
+                continue
+            if line.strip():
+                if in_en:
+                    trend_en_lines.append(line.strip())
+                else:
+                    trend_zh_lines.append(line.strip())
+
+    def _to_html(trend_lines):
+        if not trend_lines:
+            return ""
+        body = "<br>".join(trend_lines)
+        body = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", body)
+        return body
+
+    zh_body = _to_html(trend_zh_lines)
+    en_body = _to_html(trend_en_lines)
+    return zh_body, en_body
+
+
+def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报",
+                           article_text: str = "") -> str:
+    """用 Jinja2 模板生成杂志风格 HTML 页面"""
+    # 提取今日重点
+    highlight_zh, highlight_en = _extract_highlight(article_text)
+    # 计算字数和阅读时间
+    word_count, read_minutes = _calc_read_stats(article_text)
     # 分类渐变色
     gradients = {
         "模型": "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
@@ -199,406 +398,181 @@ def generate_redirect_html(groups: dict, date_str: str, label: str = "AI 日报"
         "技巧": "linear-gradient(135deg, #e11d48 0%, #be123c 100%)",
         "视频": "linear-gradient(135deg, #9333ea 0%, #6b21a8 100%)",
     }
+    colors = {
+        "模型": "0d9488", "产品": "2563eb", "行业": "ea580c",
+        "论文": "7c3aed", "技巧": "e11d48", "视频": "9333ea",
+    }
 
-    # 先按类型分组：文章在前，视频在后
+    # 概览数据：{分类: [标题1, 标题2, ...]}
+    overview_items = {cat: [it["title"] for it in items[:3]] for cat, items in groups.items()}
+
+    # 展开条目并附加分类、颜色、域名
+    items_flat = []
+    for cat, items in groups.items():
+        for item in items:
+            item["category"] = cat
+            items_flat.append(item)
+
+    # 按类型分组：文章在前，视频在后
     article_flat = [it for it in items_flat if it.get("type") != "video"]
     video_flat = [it for it in items_flat if it.get("type") == "video"]
 
-    def _render_item(item, index, image_url=None, in_video_section=False):
-        """渲染单个条目卡片"""
-        cat = html.escape(item["category"])
-        title = html.escape(item["title"])
-        summary = html.escape(item["summary"]) if item["summary"] else ""
-        link = html.escape(item["link"])
-        lang = item.get("lang", "zh")
-        accessible = item.get("accessible", True)
-        domain = urllib.parse.urlparse(item["link"]).netloc.replace("www.", "")
-        color = gradients.get(cat, "#374151").split("#")[1][:6]
+    # 给文章注入 color 和 domain，避免模板里做字符串处理
+    for item in article_flat:
+        cat = item["category"]
+        item["color"] = colors.get(cat, "374151")
+        item["gradient"] = gradients.get(cat, "linear-gradient(135deg, #374151 0%, #1f2937 100%)")
+        domain = item["link"].split("/")[2] if len(item["link"].split("/")) > 2 else ""
+        item["domain"] = domain.replace("www.", "")
 
-        is_video = item.get("type") == "video"
-
-        if is_video:
-            # 视频卡片（使用 B站 缩略图，不变）
-            thumb = html.escape(item.get("thumbnail", ""))
-            play = item.get("play", 0)
-            dur = html.escape(item.get("duration", ""))
-            author = html.escape(item.get("author", ""))
-            play_str = f"{play // 10000}万" if play >= 10000 else str(play)
-            return f"""
-    <div class="vcard" data-original-lang="{lang}">
-      <a href="{link}" target="_blank" class="vcard-img" style="background-image:url('{thumb}')">
-        <span class="vcard-dur">{dur}</span>
-      </a>
-      <div class="vcard-info">
-        <div class="vcard-t">{title}</div>
-        <div class="vcard-meta">UP主：{author}　｜　{play_str} 播放</div>
-      </div>
-    </div>"""
-        else:
-            # 文章卡片
-            lang_label = "EN" if lang == "zh" else "中文"
-            lang_btn = f'<button class="btn-s" onclick="toggleLang(this)">{lang_label}</button>'
-            read_btn = f'<a href="{link}" class="btn-r" target="_blank">原文</a>' if accessible else ""
-            btns = f'<span class="btns">{lang_btn}{read_btn}</span>'
-
-            if index == 1:
-                # 头条（hero）— 全宽背景图
-                grad = gradients.get(cat, "linear-gradient(135deg, #374151 0%, #1f2937 100%)")
-                bg_style = grad
-                if image_url:
-                    bg_style = f"url('{image_url}'), {grad}"
-                return f"""
-    <div class="hero" data-original-lang="{lang}" style="background-image:{bg_style};background-size:cover;background-position:center;background-blend-mode:overlay;">
-      <div class="hero-mask">
-        <div class="hero-t">{title}</div>
-        <div class="hero-s">{summary}</div>
-        <div class="hero-b">{btns}<span class="src">{domain}</span></div>
-      </div>
-    </div>"""
-            elif index <= 5:
-                # 小卡片（tile）— 上方配图
-                img_html = ""
-                if image_url:
-                    img_html = f'<div class="tile-img" style="background-image:url(\'{image_url}\')"></div>'
-                return f"""
-    <div class="tile" data-original-lang="{lang}" style="border-top:3px solid #{color}">
-      {img_html}
-      <div class="tile-t">{title}</div>
-      <div class="tile-s">{summary}</div>
-      <div class="tile-b">{btns}<span class="src">{domain}</span></div>
-    </div>"""
-            else:
-                return f"""
-    <div class="row" data-original-lang="{lang}">
-      <span class="dot" style="background:#{color}"></span>
-      <span class="row-t">{title}</span>
-      <span class="row-s">{summary}</span>
-      {btns}
-    </div>"""
-
-    # 渲染文章部分（批量并行获取配图）
-    card_images = {}  # 收集图片归属信息
+    # 批量并行获取配图
+    card_images = {}
     img_results = batch_get_images(article_flat)
-    cards_html = ""
-    for i, item in enumerate(article_flat, 1):
-        # 从批量结果中取配图
+    article_images = []
+    for item in article_flat:
         item_key = str(id(item))
         img_url, attr = img_results.get(item_key, (None, None))
-        if attr:
+        article_images.append(img_url)
+        if attr and img_url:
             card_images[img_url] = attr
-        if i == 2:
-            cards_html += '\n  <div class="tiles">'
-        cards_html += _render_item(item, i, image_url=img_url)
-        if i == 5:
-            cards_html += '\n  </div>'
-    # 如果文章不足5条但tiles已开启，关闭tiles
-    if 1 < len(article_flat) < 5:
-        cards_html += '\n  </div>'
-
-    # 渲染视频部分
-    if video_flat:
-        cards_html += '\n  <div class="vsection">'
-        cards_html += '\n    <div class="vsection-title">🎬 视频精选</div>'
-        cards_html += '\n    <div class="vgrid">'
-        for item in video_flat:
-            cards_html += _render_item(item, 0, in_video_section=True)
-        cards_html += '\n    </div>'
-        cards_html += '\n  </div>'
 
     # 图片署名
     creds = ""
     if card_images:
         names = []
         for url, attr in card_images.items():
-            name = html.escape(attr.get("name", ""))
-            link = html.escape(attr.get("link", ""))
+            name = attr.get("name", "")
+            link = attr.get("link", "")
             if name and link:
                 names.append(f'<a href="{link}" target="_blank" style="color:#aeaeb2;text-decoration:underline;">{name}</a>')
         if names:
             creds = " · 配图：" + "、".join(names) + "（Unsplash）"
 
-    page_html = f"""<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="referrer" content="no-referrer">
-<title>{label} · {date_str}</title>
-	<style>
-	  :root {{
-	    --bg-page: #f5f5f7;
-	    --bg-card: #fff;
-	    --text-primary: #1d1d1f;
-	    --text-secondary: #86868b;
-	    --text-tertiary: #aeaeb2;
-	    --text-ov: #47474a;
-	    --shadow: 0 1px 3px rgba(0,0,0,0.04);
-	    --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
-	  }}
-	  .dark-mode {{
-	    --bg-page: #1a1a2e;
-	    --bg-card: #1e293b;
-	    --text-primary: #e2e8f0;
-	    --text-secondary: #94a3b8;
-	    --text-tertiary: #64748b;
-	    --text-ov: #94a3b8;
-	    --shadow: 0 1px 3px rgba(0,0,0,0.2);
-	    --shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
-	  }}
-	  * {{ margin:0; padding:0; box-sizing:border-box; }}
-	  body {{
-	    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-	    background: var(--bg-page); color: var(--text-primary); line-height: 1.6;
-	    max-width: 740px; margin: 0 auto;
-	    transition: background 0.2s, color 0.2s;
-	  }}
+    # 提取趋势洞察（中文和英文）
+    trend_zh, trend_en = _extract_trend_html(article_text)
 
-	  /* dark mode toggle */
-	  .theme-toggle {{
-	    position:fixed; top:12px; right:12px; z-index:999;
-	    width:36px; height:36px; border-radius:50%; border:none;
-	    background:rgba(255,255,255,0.15); color:#fff; font-size:16px;
-	    cursor:pointer; backdrop-filter:blur(4px);
-	    transition:background 0.2s;
-	  }}
-	  .theme-toggle:hover {{ background:rgba(255,255,255,0.3); }}
+    # 生成和昨天的对比
+    comparison = _generate_comparison(groups)
 
-	  /* header */
-	  .hdr {{
-	    background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
-	    color:#fff; padding: 36px 24px 28px; text-align:center;
-	  }}
-	  .hdr h1 {{ font-size:clamp(1.2em,4vw,1.6em); font-weight:800; letter-spacing:2px; }}
-	  .hdr .sub {{ font-size:clamp(0.75em,2.5vw,0.85em); color:rgba(255,255,255,0.6); margin-top:6px; }}
+    # 线上页面地址（分享按钮和 RSS 用）
+    page_url = f"https://vv0rfr.github.io/ai-daily/{date_str}-ai.html"
 
-	  .wrap {{ padding: 16px 14px; }}
+    # 渲染模板
+    template = _jinja_env.get_template("daily.html")
+    return template.render(
+        groups=groups,
+        date_str=date_str,
+        label=label,
+        items_flat=items_flat,
+        article_flat=article_flat,
+        video_flat=video_flat,
+        article_images=article_images,
+        overview_items=overview_items,
+        gradients=gradients,
+        colors=colors,
+        creds=creds,
+        trend_zh=trend_zh,
+        trend_en=trend_en,
+        highlight_zh=highlight_zh,
+        highlight_en=highlight_en,
+        word_count=word_count,
+        read_minutes=read_minutes,
+        comparison=comparison,
+        page_url=page_url,
+    )
 
-	  /* overview */
-	  .ov {{
-	    background:var(--bg-card); border-radius:12px; padding:14px 16px; margin-bottom:16px;
-	    box-shadow:var(--shadow); transition:background 0.2s,box-shadow 0.2s;
-	  }}
-	  .ov h3 {{ font-size:0.82em; color:var(--text-secondary); font-weight:600; margin-bottom:8px; letter-spacing:1px; }}
-	  .ov li {{ font-size:0.85em; color:var(--text-ov); padding:3px 0; list-style:none; }}
-	  .ov li strong {{ color:var(--text-primary); }}
 
-	  /* hero */
-	  .hero {{
-	    border-radius:14px; overflow:hidden; margin-bottom:14px;
-	    min-height:200px; display:flex; align-items:flex-end; color:#fff;
-	    transition: transform 0.2s;
-	  }}
-	  .hero:hover {{ transform:scale(1.01); }}
-	  .hero-mask {{
-	    width:100%; padding:22px 20px;
-	    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 55%, transparent 100%);
-	  }}
-	  .hero-t {{ font-size:clamp(1em,3.5vw,1.15em); font-weight:700; margin-bottom:6px; line-height:1.4; }}
-	  .hero-s {{ font-size:clamp(0.78em,2.5vw,0.85em); color:rgba(255,255,255,0.8); margin-bottom:10px; }}
-	  .hero-b {{ display:flex; align-items:center; gap:6px; }}
+def generate_feed(groups: dict, date_str: str, label: str = "AI 日报",
+                  base_url: str = "https://vv0rfr.github.io/ai-daily") -> str:
+    """生成 Atom 格式的 feed.xml"""
+    from xml.etree.ElementTree import Element, SubElement, tostring
+    from xml.dom.minidom import parseString
 
-	  /* tile grid */
-	  .tiles {{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }}
-	  .tile {{
-	    background:var(--bg-card); border-radius:12px; padding:14px;
-	    box-shadow:var(--shadow); transition:transform 0.15s,box-shadow 0.2s,background 0.2s;
-	  }}
-	  .tile:hover {{ transform:translateY(-2px); box-shadow:var(--shadow-hover); }}
-	  .tile-t {{ font-size:clamp(0.82em,2.8vw,0.9em); font-weight:700; color:var(--text-primary); margin-bottom:4px; line-height:1.4; }}
-	  .tile-s {{ font-size:clamp(0.74em,2.5vw,0.8em); color:var(--text-secondary); line-height:1.5; margin-bottom:8px;
-	    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }}
-	  .tile-b {{ display:flex; align-items:center; gap:6px; }}
-	  .tile-img {{
-	    width:100%; height:140px; border-radius:8px; margin-bottom:10px;
-	    background-size:cover; background-position:center; background-color:var(--bg-page);
-	    transition: transform 0.2s;
-	  }}
-	  .tile:hover .tile-img {{ transform:scale(1.02); }}
+    NS = "http://www.w3.org/2005/Atom"
+    root = Element("feed", xmlns=NS)
+    SubElement(root, "title").text = label
+    SubElement(root, "subtitle").text = "AI-Powered Daily Digest"
+    SubElement(root, "id").text = f"{base_url}/"
+    SubElement(root, "updated").text = f"{date_str}T08:00:00+08:00"
+    link_self = SubElement(root, "link", rel="self", type="application/atom+xml",
+                           href=f"{base_url}/feed.xml")
+    link_alt = SubElement(root, "link", rel="alternate", type="text/html",
+                           href=f"{base_url}/{date_str}-ai.html")
 
-	  /* rows */
-	  .row {{
-	    background:var(--bg-card); border-radius:10px; padding:10px 14px; margin-bottom:6px;
-	    display:flex; align-items:center; gap:8px;
-	    box-shadow:var(--shadow); transition:background 0.2s,box-shadow 0.2s;
-	  }}
-	  .row:hover {{ background:color-mix(in srgb, var(--bg-card) 95%, #000); }}
-	  .dot {{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }}
-	  .row-t {{ font-size:clamp(0.78em,2.5vw,0.85em); font-weight:600; color:var(--text-primary); flex-shrink:0;
-	    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:55%; }}
-	  .row-s {{ font-size:clamp(0.72em,2.3vw,0.78em); color:var(--text-secondary); flex:1; min-width:0;
-	    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }}
-
-	  /* buttons */
-	  .btns {{ display:flex; gap:4px; flex-shrink:0; margin-left:auto; }}
-	  .btn-s {{
-	    background:var(--bg-page); color:var(--text-primary); border:none; padding:2px 8px;
-	    border-radius:4px; font-size:0.7em; cursor:pointer; font-weight:600;
-	  }}
-	  .btn-s:hover {{ background:color-mix(in srgb, var(--bg-page) 90%, #000); }}
-	  .btn-s.active {{ background:#0071e3; color:#fff; }}
-	  .btn-r {{
-	    display:inline-block; padding:2px 8px; border-radius:4px;
-	    font-size:0.7em; text-decoration:none; background:#0071e3; color:#fff; font-weight:600;
-	  }}
-	  .btn-r:hover {{ background:#0077ed; }}
-	  .src {{ font-size:0.7em; color:var(--text-tertiary); margin-left:4px; }}
-	  .hero .btn-s {{ background:rgba(255,255,255,0.15); color:#fff; }}
-	  .hero .btn-s:hover {{ background:rgba(255,255,255,0.25); }}
-	  .hero .btn-s.active {{ background:#fff; color:#1d1d1f; }}
-	  .hero .btn-r {{ background:rgba(255,255,255,0.2); color:#fff; }}
-	  .hero .btn-r:hover {{ background:rgba(255,255,255,0.35); }}
-	  .hero .src {{ color:rgba(255,255,255,0.4); }}
-
-	  .ft {{ text-align:center; color:var(--text-tertiary); font-size:0.75em; padding:20px 14px 28px; }}
-
-	  /* video section */
-	  .vsection {{ margin-top:14px; }}
-	  .vsection-title {{
-	    font-size:clamp(0.85em,3vw,1em); font-weight:700; color:#9333ea; margin-bottom:10px;
-	    padding-left:2px; letter-spacing:0.5px;
-	  }}
-	  .vgrid {{ display:flex; flex-direction:column; gap:10px; }}
-	  .vcard {{
-	    display:flex; gap:12px; background:var(--bg-card); border-radius:12px; overflow:hidden;
-	    box-shadow:var(--shadow); transition:transform 0.15s,box-shadow 0.2s,background 0.2s;
-	  }}
-	  .vcard:hover {{ transform:translateY(-2px); box-shadow:var(--shadow-hover); }}
-	  .vcard-img {{
-	    width:140px; min-height:80px; flex-shrink:0; background-size:cover; background-position:center;
-	    background-color:var(--bg-page); position:relative; display:block; text-decoration:none;
-	  }}
-	  .vcard-dur {{
-	    position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.75); color:#fff;
-	    font-size:0.65em; padding:1px 5px; border-radius:3px; font-weight:600;
-	  }}
-	  .vcard-info {{ flex:1; padding:10px 12px 10px 0; min-width:0; display:flex; flex-direction:column; justify-content:center; }}
-	  .vcard-t {{
-	    font-size:clamp(0.8em,2.8vw,0.88em); font-weight:700; color:var(--text-primary); line-height:1.4; margin-bottom:4px;
-	    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-	    transition:color 0.2s;
-	  }}
-	  .vcard-meta {{ font-size:0.74em; color:var(--text-secondary); }}
-
-	  /* mobile */
-	  @media (max-width:480px) {{
-	    .hdr {{ padding:28px 16px 22px; }}
-	    .wrap {{ padding:12px 10px; }}
-	    .tiles {{ grid-template-columns:1fr; gap:8px; }}
-	    .tile {{ padding:12px; }}
-	    .tile-img {{ height:120px; }}
-	    .hero {{ min-height:160px; border-radius:10px; }}
-	    .hero-mask {{ padding:16px 14px; }}
-	    .vcard-img {{ width:110px; min-height:70px; }}
-	  }}
-
-	  /* auto dark mode */
-	  @media (prefers-color-scheme: dark) {{
-	    :root:not(.light-mode) {{
-	      --bg-page: #1a1a2e;
-	      --bg-card: #1e293b;
-	      --text-primary: #e2e8f0;
-	      --text-secondary: #94a3b8;
-	      --text-tertiary: #64748b;
-	      --text-ov: #94a3b8;
-	      --shadow: 0 1px 3px rgba(0,0,0,0.2);
-	      --shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
-	    }}
-	  }}
-	</style>
-</head>
-<body>
-  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
-  <div class="hdr">
-    <h1>{label}</h1>
-    <div class="sub">{date_str} · {len(items_flat)} 条精选</div>
-  </div>
-  <div class="wrap">
-  <div class="ov">
-    <h3>今日概览</h3>
-    <ul>"""
+    author = SubElement(root, "author")
+    SubElement(author, "name").text = "AI Daily Bot"
 
     for cat, items in groups.items():
-        titles = "、".join(item["title"] for item in items[:3])
-        more = f" 等{len(items)}条" if len(items) > 3 else ""
-        page_html += f'\n      <li><strong>{cat}</strong>：{titles}{more}</li>'
+        for item in items:
+            entry = SubElement(root, "entry")
+            SubElement(entry, "title").text = item["title"]
+            SubElement(entry, "id").text = item["link"]
+            SubElement(entry, "link", href=item["link"])
+            SubElement(entry, "updated").text = f"{date_str}T08:00:00+08:00"
+            summary = item.get("summary", "")
+            if summary:
+                SubElement(entry, "summary", type="html").text = summary
+            cat_el = SubElement(entry, "category", term=cat)
 
-    # 将 tiles 2-5 包裹在 grid 容器里
-    cards_html = cards_html.replace('<!--TILES-->', '')
+    raw_xml = tostring(root, encoding="unicode", xml_declaration=False)
+    xml_str = '<?xml version="1.0" encoding="UTF-8"?>\n' + raw_xml
+    # 格式化
+    try:
+        dom = parseString(xml_str)
+        return dom.toprettyxml(indent="  ", encoding=None).replace(
+            '<?xml version="1.0" ?>\n', '<?xml version="1.0" encoding="UTF-8"?>\n'
+        )
+    except Exception:
+        return xml_str
 
-    page_html += f"""
-    </ul>
-  </div>
-  {cards_html}
-  </div>
-  <div class="ft">本文由 AI 自动整理 · 内容仅供参考{creds}</div>
 
-  <script>
-  async function toggleLang(btn) {{
-    var card = btn.closest('[data-original-lang]');
-    var content = card.querySelector('.hero-s, .tile-s, .row-s');
-    if (!content) content = card;
-    var originalLang = card.dataset.originalLang;
+def generate_index(output_dir: str = None):
+    """扫描 output/ 下的 *-ai.html，生成历史日报列表页 index.html"""
+    import glob as _glob
+    import re
+    from database import _get_conn
 
-    if (card.dataset.translated) {{
-      if (card.dataset.showing === 'translated') {{
-        content.textContent = card.dataset.originalText;
-        card.dataset.showing = 'original';
-        btn.textContent = originalLang === 'zh' ? 'EN' : '中文';
-        btn.classList.remove('active');
-      }} else {{
-        content.textContent = card.dataset.translated;
-        card.dataset.showing = 'translated';
-        btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
-        btn.classList.add('active');
-      }}
-      return;
-    }}
+    if output_dir is None:
+        output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
 
-    var text = content.textContent;
-    card.dataset.originalText = text;
-    card.dataset.showing = 'original';
-    btn.textContent = '...';
-    btn.disabled = true;
+    pattern = os.path.join(output_dir, "*-ai.html")
+    files = _glob.glob(pattern)
 
-    var targetLang = originalLang === 'zh' ? 'en' : 'zh-CN';
-    var sourceLang = originalLang === 'zh' ? 'zh-CN' : 'en';
+    entries = []
+    for f in files:
+        basename = os.path.basename(f)
+        m = re.match(r"(\d{4}-\d{2}-\d{2})-ai\.html", basename)
+        if not m:
+            continue
+        date_str = m.group(1)
+        # 从数据库查该日期的文章数
+        count = 0
+        try:
+            conn = _get_conn()
+            row = conn.execute(
+                "SELECT total_items FROM runs WHERE run_date=? AND mode='ai' ORDER BY id DESC LIMIT 1",
+                (date_str,),
+            ).fetchone()
+            if row:
+                count = row["total_items"] or 0
+            conn.close()
+        except Exception:
+            pass
+        entries.append({"date": date_str, "filename": basename, "count": count})
 
-    try {{
-      var url = 'https://api.mymemory.translated.net/get?q=' +
-                encodeURIComponent(text.substring(0, 500)) +
-                '&langpair=' + sourceLang + '|' + targetLang;
-      var resp = await fetch(url);
-      var data = await resp.json();
-      var translated = data.responseData.translatedText;
-      card.dataset.translated = translated;
-      content.textContent = translated;
-      card.dataset.showing = 'translated';
-      btn.textContent = originalLang === 'zh' ? '中文' : 'EN';
-      btn.classList.add('active');
-    }} catch(e) {{
-      btn.textContent = '失败';
-      setTimeout(function() {{ btn.textContent = originalLang === 'zh' ? 'EN' : '中文'; }}, 2000);
-    }}
-    btn.disabled = false;
-  }}
+    entries.sort(key=lambda e: e["date"], reverse=True)
 
-  function toggleTheme() {{
-    var body = document.body;
-    var btn = document.getElementById('themeBtn');
-    body.classList.toggle('dark-mode');
-    body.classList.remove('light-mode');
-    btn.textContent = body.classList.contains('dark-mode') ? '☀️' : '🌙';
-    try {{ localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light'); }} catch(e) {{}}
-  }}
-  try {{
-    if (localStorage.getItem('theme') === 'dark') {{
-      document.body.classList.add('dark-mode');
-      document.getElementById('themeBtn').textContent = '☀️';
-    }}
-  }} catch(e) {{}}
-	
-  </script>
-</body>
-</html>"""
+    # 日期范围
+    date_range = ""
+    if len(entries) >= 2:
+        date_range = f"{entries[-1]['date']} ~ {entries[0]['date']}"
 
-    return page_html
+    total = len(entries)
+    template = _jinja_env.get_template("index.html")
+    html = template.render(entries=entries, total=total, date_range=date_range)
+
+    index_path = os.path.join(output_dir, "index.html")
+    with open(index_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"  [writer] 历史列表页：{index_path}（{total} 期）")
+    return index_path

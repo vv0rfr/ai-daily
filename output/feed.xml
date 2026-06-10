@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>AI 垂直日报</title>
+  <subtitle>AI-Powered Daily Digest</subtitle>
+  <id>https://vv0rfr.github.io/ai-daily/</id>
+  <updated>2026-06-10T08:00:00+08:00</updated>
+  <link rel="self" type="application/atom+xml" href="https://vv0rfr.github.io/ai-daily/feed.xml"/>
+  <link rel="alternate" type="text/html" href="https://vv0rfr.github.io/ai-daily/2026-06-10-ai.html"/>
+  <author>
+    <name>AI Daily Bot</name>
+  </author>
+  <entry>
+    <title>欧盟发布临时措施，要求 Meta 向第三方 AI 助手免费开放 WhatsApp</title>
+    <id>https://www.ithome.com/0/962/206.htm</id>
+    <link href="https://www.ithome.com/0/962/206.htm"/>
+    <updated>2026-06-10T08:00:00+08:00</updated>
+    <summary type="html">欧盟委员会6月9日宣布临时措施，责令Meta在反垄断调查结束前免费向第三方AI助手开放WhatsApp访问权限。Meta于2025年10月15日禁止第三方AI助手调用WhatsApp for Business API，意图让自家Meta A...</summary>
+    <category term="行业"/>
+  </entry>
+  <entry>
+    <title>里程碑式德国裁决：Google AI Overviews 被视为谷歌自身言论，需为错误回答承担责任</title>
+    <id>https://the-decoder.com/landmark-german-ruling-declares-googles-ai-overviews-are-googles-own-words-and-makes-it-liable-for-false-answers</id>
+    <link href="https://the-decoder.com/landmark-german-ruling-declares-googles-ai-overviews-are-googles-own-words-and-makes-it-liable-for-false-answers"/>
+    <updated>2026-06-10T08:00:00+08:00</updated>
+    <summary type="html">德国地方法院裁定，Google 对其 AI 概览生成的内容直接承担法律责任，不能援引搜索引擎运营商原有的有限责任保护。涉案 AI 概览错误地将两家出版商与欺诈行为关联，且相关声明未出现在任何链接来源中。该裁决可能为全球 AI 生成内容责任认...</summary>
+    <category term="行业"/>
+  </entry>
+  <entry>
+    <title>在 AgentsView 中为 Claude Fable 5 设置自定义价格</title>
+    <id>https://simonwillison.net/2026/Jun/9/agentsview-custom-model-price</id>
+    <link href="https://simonwillison.net/2026/Jun/9/agentsview-custom-model-price"/>
+    <updated>2026-06-10T08:00:00+08:00</updated>
+    <summary type="html">Wes McKinney 开发的 AgentsView 是一个用于追踪本地编码智能体 token 使用情况的工具。由于近日发布的 Claude Fable 5 尚未被收录进 AgentsView 的定价数据库，作者利用 Fable 逆向工程...</summary>
+    <category term="技巧"/>
+  </entry>
+  <entry>
+    <title>Hugging Face 博客发布语音智能体代码切换基准测试</title>
+    <id>https://huggingface.co/blog/ServiceNow-AI/code-switching</id>
+    <link href="https://huggingface.co/blog/ServiceNow-AI/code-switching"/>
+    <updated>2026-06-10T08:00:00+08:00</updated>
+    <summary type="html">Hugging Face 博客发布针对语音智能体处理代码切换语音的基准测试。数据集覆盖西班牙语-英语、法语-英语、加拿大法语-英语和德语-英语四对语言，基于人力资源与IT服务管理场景构建。采用词错误率、语义词错误率和答案错误率三项指标评估七...</summary>
+    <category term="论文"/>
+  </entry>
+  <entry>
+    <title>Cohere发布North Mini Code：面向开发者的开源编码模型</title>
+    <id>https://huggingface.co/blog/CohereLabs/introducing-north-mini-code</id>
+    <link href="https://huggingface.co/blog/CohereLabs/introducing-north-mini-code"/>
+    <updated>2026-06-10T08:00:00+08:00</updated>
+    <summary type="html">Cohere发布North Mini Code，一款30B参数MoE模型（3B活跃参数），Apache 2.0开源。在Artificial Analysis Coding Index上得分33.4，超越Qwen3.5、Gemma 4等同类模...</summary>
+    <category term="模型"/>
+  </entry>
+</feed>

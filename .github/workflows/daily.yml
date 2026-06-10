@@ -1,8 +1,6 @@
-name: AI Daily Report
-
+name: AI Daily Digest
 on:
   schedule:
-    # 每天 UTC 00:00 = 北京时间 08:00
     - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
@@ -17,88 +15,29 @@ on:
           - all
 
 jobs:
-  generate:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
+      - run: pip install -r requirements.txt
       - name: Set mode
         id: mode
         run: echo "value=${{ github.event.inputs.mode || 'ai' }}" >> $GITHUB_OUTPUT
-
-      - name: Generate report
+      - run: python main.py ${{ steps.mode.outputs.value }}
         env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_API_URL: ${{ secrets.DEEPSEEK_API_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_URL: ${{ secrets.ANTHROPIC_API_URL }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
-        run: python main.py ${{ steps.mode.outputs.value }}
-
-      - name: Generate index page
-        run: python scripts/generate_index.py
-
-      - name: Commit output
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "docs: update daily report $(date +%Y-%m-%d)"
-            git push
-          fi
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          name: daily-report-${{ github.run_number }}
-          path: output/
-          retention-days: 30
-
-      - name: Notify (Server酱)
-        if: env.SERVERCHAN_KEY != ''
-        env:
-          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
-          MODE: ${{ steps.mode.outputs.value }}
-        run: |
-          FILES=$(ls output/*.md 2>/dev/null | wc -l)
-          TODAY=$(date +%Y-%m-%d)
-          curl -s "https://sctapi.ftqq.com/${SERVERCHAN_KEY}.send" \
-            -d "title=AI日报已生成 (${TODAY})" \
-            -d "desp=模式: ${MODE}\n文件数: ${FILES}\n\n[查看日报](https://github.com/${{ github.repository }}/tree/main/output)\n\n💡 本地执行以下命令提交到公众号草稿箱：\n python main.py ${MODE} --publish" || true
-
-      # ⚠️ 公众号发布（需本地IP在白名单内，不在Actions中执行）
-      # 本地运行: python main.py ai --publish 或 python main.py all --publish
-
-  # ========== 部署到 GitHub Pages ==========
-  deploy-pages:
-    needs: generate
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: output/
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./output
